@@ -34,10 +34,6 @@ export async function onRequestPost(context) {
 
     const event = JSON.parse(rawBody)
 
-    /*
-     * Only create a Printify order after Stripe has
-     * confirmed the Checkout Session is paid.
-     */
     if (
       event.type !==
       'checkout.session.completed'
@@ -54,6 +50,36 @@ export async function onRequestPost(context) {
         received: true,
         skipped: 'Payment not completed.',
       })
+    }
+
+    /*
+     * Prevent duplicate Printify orders when Stripe
+     * retries the same Checkout Session.
+     *
+     * Requires a Cloudflare KV namespace binding named:
+     * PRINTIFY_ORDERS
+     */
+    const orderKey =
+      `stripe-session:${session.id}`
+
+    if (context.env.PRINTIFY_ORDERS) {
+      const existingOrder =
+        await context.env.PRINTIFY_ORDERS.get(
+          orderKey,
+        )
+
+      if (existingOrder) {
+        console.log(
+          'Printify order already created:',
+          existingOrder,
+        )
+
+        return json({
+          received: true,
+          alreadyProcessed: true,
+          printifyOrderId: existingOrder,
+        })
+      }
     }
 
     const printifyItems =
@@ -92,11 +118,12 @@ export async function onRequestPost(context) {
     }
 
     /*
-     * Stripe Checkout collects the shipping address.
+     * Stripe Checkout stores the shipping address under
+     * collected_information.shipping_details.
      */
     const shipping =
-        session.collected_information?.shipping_details ||
-        session.shipping_details
+      session.collected_information?.shipping_details ||
+      session.shipping_details
 
     if (!shipping?.address) {
       return new Response(
@@ -139,9 +166,6 @@ export async function onRequestPost(context) {
 
       line_items: lineItems,
 
-      /*
-       * 1 = standard shipping.
-       */
       shipping_method: 1,
 
       send_shipping_notification: true,
@@ -222,6 +246,20 @@ export async function onRequestPost(context) {
       'Printify order created:',
       printifyResult?.id,
     )
+
+    /*
+     * Remember the successful order so Stripe retries
+     * cannot create another Printify order.
+     */
+    if (
+      context.env.PRINTIFY_ORDERS &&
+      printifyResult?.id
+    ) {
+      await context.env.PRINTIFY_ORDERS.put(
+        orderKey,
+        String(printifyResult.id),
+      )
+    }
 
     return json({
       received: true,
@@ -377,7 +415,6 @@ function json(
     JSON.stringify(data),
     {
       status,
-
       headers: {
         'Content-Type':
           'application/json',
