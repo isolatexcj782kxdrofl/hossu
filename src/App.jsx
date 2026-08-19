@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 
 const product = {
@@ -42,11 +42,43 @@ function App() {
     product.colours[0],
   )
   const [selectedSize, setSelectedSize] = useState('')
-  const [bag, setBag] = useState([])
+  const [bag, setBag] = useState(() => {
+    try {
+      const savedBag = localStorage.getItem('hossu-bag')
+
+      if (!savedBag) {
+        return []
+      }
+
+      const parsedBag = JSON.parse(savedBag)
+
+      return Array.isArray(parsedBag)
+        ? parsedBag
+        : []
+    } catch {
+      return []
+    }
+  })
   const [message, setMessage] = useState('')
   const [addedToBag, setAddedToBag] = useState(false)
-  const [checkoutLoading, setCheckoutLoading] = useState(false)
-  const [checkoutError, setCheckoutError] = useState('')
+  const [checkoutLoading, setCheckoutLoading] =
+    useState(false)
+  const [checkoutError, setCheckoutError] =
+    useState('')
+
+  // Save the bag whenever it changes.
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        'hossu-bag',
+        JSON.stringify(bag),
+      )
+    } catch {
+      console.error(
+        'Unable to save Hossu bag.',
+      )
+    }
+  }, [bag])
 
   const openView = (nextView) => {
     setView(nextView)
@@ -159,7 +191,8 @@ function App() {
 
       if (!response.ok || !data.url) {
         throw new Error(
-          data.error || 'Unable to start checkout.',
+          data.error ||
+            'Unable to start checkout.',
         )
       }
 
