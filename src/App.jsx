@@ -1,121 +1,679 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
 import './App.css'
 
+const product = {
+  id: 'H-001',
+  name: 'GRUMPY VAMPIRE',
+  type: 'T-SHIRT',
+  description: "It's just one of those days.",
+
+  colours: [
+    {
+      name: 'White',
+      key: 'white',
+      image: '/images/mockups/grumpy-vampire_white.jpg',
+    },
+    {
+      name: 'Sport Grey',
+      key: 'sportgrey',
+      image: '/images/mockups/grumpy-vampire_sportgrey.jpg',
+    },
+    {
+      name: 'Military Green',
+      key: 'militarygreen',
+      image: '/images/mockups/grumpy-vampire_militarygreen.jpg',
+    },
+    {
+      name: 'Light Pink',
+      key: 'lightpink',
+      image: '/images/mockups/grumpy-vampire_lightpink.jpg',
+    },
+  ],
+
+  sizes: ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'],
+}
+
+const getPrice = (size) =>
+  ['3XL', '4XL', '5XL'].includes(size) ? 26.99 : 24.99
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [view, setView] = useState('home')
+  const [selectedColour, setSelectedColour] = useState(
+    product.colours[0],
+  )
+  const [selectedSize, setSelectedSize] = useState('')
+  const [bag, setBag] = useState([])
+  const [message, setMessage] = useState('')
+  const [addedToBag, setAddedToBag] = useState(false)
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const [checkoutError, setCheckoutError] = useState('')
+
+  const openView = (nextView) => {
+    setView(nextView)
+    setMessage('')
+    setCheckoutError('')
+    window.scrollTo(0, 0)
+  }
+
+  const openProduct = () => {
+    setAddedToBag(false)
+    setSelectedSize('')
+    setSelectedColour(product.colours[0])
+    openView('product')
+  }
+
+  const addToBag = () => {
+    if (!selectedSize) {
+      setMessage('SELECT A SIZE')
+      return
+    }
+
+    const existingItem = bag.find(
+      (item) =>
+        item.productId === product.id &&
+        item.colour.key === selectedColour.key &&
+        item.size === selectedSize,
+    )
+
+    if (existingItem) {
+      setBag(
+        bag.map((item) =>
+          item.productId === product.id &&
+          item.colour.key === selectedColour.key &&
+          item.size === selectedSize
+            ? {
+                ...item,
+                quantity: item.quantity + 1,
+              }
+            : item,
+        ),
+      )
+    } else {
+      setBag([
+        ...bag,
+        {
+          productId: product.id,
+          name: product.name,
+          price: getPrice(selectedSize),
+          colour: selectedColour,
+          size: selectedSize,
+          quantity: 1,
+        },
+      ])
+    }
+
+    setMessage('ADDED TO BAG')
+    setAddedToBag(true)
+
+    setTimeout(() => {
+      setMessage('')
+    }, 1800)
+  }
+
+  const changeQuantity = (index, amount) => {
+    setBag((currentBag) =>
+      currentBag
+        .map((item, itemIndex) =>
+          itemIndex === index
+            ? {
+                ...item,
+                quantity: Math.max(
+                  0,
+                  item.quantity + amount,
+                ),
+              }
+            : item,
+        )
+        .filter((item) => item.quantity > 0),
+    )
+  }
+
+  const checkout = async () => {
+    if (bag.length === 0) {
+      return
+    }
+
+    setCheckoutLoading(true)
+    setCheckoutError('')
+
+    try {
+      const items = bag.map((item) => ({
+        productId: item.productId,
+        color: item.colour.key,
+        size: item.size,
+        quantity: item.quantity,
+      }))
+
+      const response = await fetch(
+        '/api/create-checkout',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ items }),
+        },
+      )
+
+      const data = await response.json()
+
+      if (!response.ok || !data.url) {
+        throw new Error(
+          data.error || 'Unable to start checkout.',
+        )
+      }
+
+      window.location.href = data.url
+    } catch (error) {
+      console.error(error)
+
+      setCheckoutError(
+        error.message ||
+          'Something went wrong. Please try again.',
+      )
+
+      setCheckoutLoading(false)
+    }
+  }
+
+  const bagCount = bag.reduce(
+    (total, item) => total + item.quantity,
+    0,
+  )
+
+  const subtotal = bag.reduce(
+    (total, item) =>
+      total + item.price * item.quantity,
+    0,
+  )
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
+    <div className="site">
+      <header className="header">
         <button
+          className="logo"
           type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+          onClick={() => openView('home')}
+          aria-label="Back to Hossu home"
         >
-          Count is {count}
+          <img
+            src="/images/hossu-icon.png"
+            alt="Hossu"
+          />
         </button>
-      </section>
 
-      <div className="ticks"></div>
+        <nav className="nav">
+          <button
+            type="button"
+            onClick={() => openView('home')}
+          >
+            Archive
+          </button>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          <a href="#contact">Contact</a>
+        </nav>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+        <button
+          className="bag"
+          type="button"
+          onClick={() => openView('bag')}
+        >
+          Bag [{bagCount}]
+        </button>
+      </header>
+
+      <main id="top">
+        {view === 'home' && (
+          <>
+            <section className="hero">
+              <div className="hero-meta">
+                <span>HSS / 2026</span>
+                <span>ARCHIVE_001</span>
+              </div>
+
+              <div className="hero-title">
+                <img
+                  src="/images/hossu-logo.png"
+                  alt="Hossu"
+                />
+              </div>
+
+              <div className="hero-bottom">
+                <p>
+                  INDEPENDENT CLOTHING
+                  <br />
+                  / DIGITAL ARCHIVE
+                </p>
+
+                <a
+                  href="#archive"
+                  className="enter"
+                >
+                  ENTER ARCHIVE <span>↓</span>
+                </a>
+
+                <p className="coordinates">
+                  51°30' N
+                  <br />
+                  0°07' W
+                </p>
+              </div>
+            </section>
+
+            <section
+              className="archive"
+              id="archive"
+            >
+              <div className="archive-header">
+                <div>
+                  <p className="label">
+                    SELECTED PIECES
+                  </p>
+
+                  <h2>ARCHIVE</h2>
+                </div>
+
+                <span>01 OBJECT</span>
+              </div>
+
+              <div className="product-grid">
+                <button
+                  type="button"
+                  className="product product-card"
+                  onClick={openProduct}
+                >
+                  <div className="product-image">
+                    <img
+                      src={product.colours[0].image}
+                      alt={product.name}
+                    />
+
+                    <span className="product-index">
+                      {product.id}
+                    </span>
+
+                    <span className="view">
+                      VIEW →
+                    </span>
+                  </div>
+
+                  <div className="product-info">
+                    <div>
+                      <span>{product.id}</span>
+
+                      <h3>{product.name}</h3>
+
+                      <p className="product-type">
+                        {product.type}
+                      </p>
+                    </div>
+
+                    <span>
+                      FROM £24.99
+                    </span>
+                  </div>
+                </button>
+              </div>
+            </section>
+
+            <section
+              className="contact"
+              id="contact"
+            >
+              <div className="contact-label">
+                CONTACT / 002
+              </div>
+
+              <h2>
+                SAY
+                <br />
+                <span>HELLO.</span>
+              </h2>
+
+              <a
+                href="mailto:hello@hossu.com"
+                className="email"
+              >
+                hello@hossu.com
+              </a>
+            </section>
+          </>
+        )}
+
+        {view === 'product' && (
+          <section className="product-page">
+            <button
+              type="button"
+              className="back-button"
+              onClick={() => openView('home')}
+            >
+              ← BACK TO ARCHIVE
+            </button>
+
+            <div className="product-page-grid">
+              <div className="product-page-image">
+                <img
+                  src={selectedColour.image}
+                  alt={`${product.name} - ${selectedColour.name}`}
+                />
+
+                <span className="product-page-index">
+                  {product.id}
+                </span>
+              </div>
+
+              <div className="product-page-info">
+                <div className="product-page-heading">
+                  <span className="label">
+                    {product.id}
+                  </span>
+
+                  <h1>{product.name}</h1>
+
+                  <p className="product-page-type">
+                    {product.type}
+                  </p>
+
+                  <p className="product-page-price">
+                    £
+                    {getPrice(
+                      selectedSize,
+                    ).toFixed(2)}
+                  </p>
+                </div>
+
+                <p className="description">
+                  {product.description}
+                </p>
+
+                <div className="option-group">
+                  <div className="option-heading">
+                    <span>COLOUR</span>
+
+                    <span>
+                      {selectedColour.name}
+                    </span>
+                  </div>
+
+                  <div className="colour-options">
+                    {product.colours.map(
+                      (colour) => (
+                        <button
+                          key={colour.key}
+                          type="button"
+                          className={`colour-button ${
+                            selectedColour.key ===
+                            colour.key
+                              ? 'selected'
+                              : ''
+                          }`}
+                          onClick={() => {
+                            setSelectedColour(
+                              colour,
+                            )
+                            setMessage('')
+                          }}
+                        >
+                          <span
+                            className={`colour-swatch ${colour.key}`}
+                          />
+
+                          <span>
+                            {colour.name}
+                          </span>
+                        </button>
+                      ),
+                    )}
+                  </div>
+                </div>
+
+                <div className="option-group">
+                  <div className="option-heading">
+                    <span>SIZE</span>
+
+                    <span>
+                      {selectedSize ||
+                        'SELECT'}
+                    </span>
+                  </div>
+
+                  <div className="size-options">
+                    {product.sizes.map(
+                      (size) => (
+                        <button
+                          key={size}
+                          type="button"
+                          className={`size-button ${
+                            selectedSize ===
+                            size
+                              ? 'selected'
+                              : ''
+                          }`}
+                          onClick={() => {
+                            setSelectedSize(
+                              size,
+                            )
+                            setMessage('')
+                          }}
+                        >
+                          {size}
+                        </button>
+                      ),
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="add-button"
+                  onClick={addToBag}
+                >
+                  <span>
+                    {message || 'ADD TO BAG'}
+                  </span>
+
+                  <span>→</span>
+                </button>
+
+                {addedToBag &&
+                  bagCount > 0 && (
+                    <div className="after-add">
+                      <div className="after-add-message">
+                        <span>✓</span>
+                        ITEM IN BAG
+                      </div>
+
+                      <button
+                        type="button"
+                        className="proceed-button"
+                        onClick={() =>
+                          openView('bag')
+                        }
+                      >
+                        <span>
+                          VIEW BAG / PROCEED
+                          TO CHECKOUT
+                        </span>
+
+                        <span>→</span>
+                      </button>
+                    </div>
+                  )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {view === 'bag' && (
+          <section className="bag-page">
+            <div className="bag-page-header">
+              <div>
+                <p className="label">
+                  YOUR SELECTION
+                </p>
+
+                <h1>BAG</h1>
+              </div>
+
+              <span className="bag-number">
+                {bagCount
+                  .toString()
+                  .padStart(2, '0')}{' '}
+                ITEMS
+              </span>
+            </div>
+
+            {bag.length === 0 ? (
+              <div className="empty-bag">
+                <p>
+                  YOUR BAG IS CURRENTLY EMPTY.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    openView('home')
+                  }
+                >
+                  RETURN TO ARCHIVE →
+                </button>
+              </div>
+            ) : (
+              <div className="bag-layout">
+                <div className="bag-items">
+                  {bag.map((item, index) => (
+                    <div
+                      className="bag-item"
+                      key={`${item.productId}-${item.colour.key}-${item.size}`}
+                    >
+                      <div className="bag-item-image">
+                        <img
+                          src={item.colour.image}
+                          alt={item.name}
+                        />
+                      </div>
+
+                      <div className="bag-item-info">
+                        <div>
+                          <span className="label">
+                            {item.productId}
+                          </span>
+
+                          <h2>{item.name}</h2>
+
+                          <p>
+                            {item.colour.name} /{' '}
+                            {item.size}
+                          </p>
+                        </div>
+
+                        <div className="quantity">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              changeQuantity(
+                                index,
+                                -1,
+                              )
+                            }
+                          >
+                            −
+                          </button>
+
+                          <span>
+                            {item.quantity}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              changeQuantity(
+                                index,
+                                1,
+                              )
+                            }
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="bag-item-price">
+                        £
+                        {(
+                          item.price *
+                          item.quantity
+                        ).toFixed(2)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <aside className="checkout">
+                  <div className="checkout-line">
+                    <span>SUBTOTAL</span>
+
+                    <span>
+                      £{subtotal.toFixed(2)}
+                    </span>
+                  </div>
+
+                  <div className="checkout-line muted">
+                    <span>SHIPPING</span>
+
+                    <span>
+                      CALCULATED AT CHECKOUT
+                    </span>
+                  </div>
+
+                  <div className="checkout-total">
+                    <span>TOTAL</span>
+
+                    <span>
+                      £{subtotal.toFixed(2)}
+                    </span>
+                  </div>
+
+                  {checkoutError && (
+                    <p className="checkout-error">
+                      {checkoutError}
+                    </p>
+                  )}
+
+                  <button
+                    type="button"
+                    className="checkout-button"
+                    onClick={checkout}
+                    disabled={checkoutLoading}
+                  >
+                    {checkoutLoading
+                      ? 'OPENING CHECKOUT...'
+                      : 'CHECKOUT →'}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="continue-shopping"
+                    onClick={() =>
+                      openView('home')
+                    }
+                    disabled={checkoutLoading}
+                  >
+                    CONTINUE SHOPPING
+                  </button>
+                </aside>
+              </div>
+            )}
+          </section>
+        )}
+      </main>
+
+      <footer className="footer">
+        <span>© HOSSU 2026</span>
+        <span>ALL RIGHTS RESERVED</span>
+        <span>HSS_ARCHIVE_001</span>
+      </footer>
+    </div>
   )
 }
 
