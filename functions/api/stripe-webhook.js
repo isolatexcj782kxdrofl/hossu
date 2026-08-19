@@ -95,7 +95,8 @@ export async function onRequestPost(context) {
      * Stripe Checkout collects the shipping address.
      */
     const shipping =
-      session.shipping_details
+        session.collected_information?.shipping_details ||
+        session.shipping_details
 
     if (!shipping?.address) {
       return new Response(
