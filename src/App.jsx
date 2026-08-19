@@ -297,17 +297,13 @@ function App() {
               className="archive"
               id="archive"
             >
-              <div className="archive-header">
-                <div>
-                  <p className="label">
-                    SELECTED PIECES
-                  </p>
-
-                  <h2>ARCHIVE</h2>
-                </div>
-
-                <span>01 OBJECT</span>
+            <div className="archive-header">
+              <div>
+                <h2>SELECTED PIECES</h2>
               </div>
+
+              <span>01 OBJECT</span>
+            </div>
 
               <div className="product-grid">
                 <button
@@ -364,10 +360,10 @@ function App() {
               </h2>
 
               <a
-                href="mailto:hello@hossu.com"
+                href="mailto:hossuclothing@gmail.com"
                 className="email"
               >
-                hello@hossu.com
+                hossuclothing@gmail.com
               </a>
             </section>
           </>
