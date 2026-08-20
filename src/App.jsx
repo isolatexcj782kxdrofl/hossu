@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
 
 const product = {
@@ -40,18 +40,31 @@ const getPrice = (size) =>
 // bring the archive and contact sections in gently instead of them just
 // snapping into place.
 function useReveal() {
-  const ref = useRef(null)
+  // Holding the node in state (instead of a plain ref) means the effect
+  // below reruns whenever the element actually mounts — including cases
+  // where the section wasn't in the page yet on first load (e.g. when
+  // the app opens straight into the order-success/cancelled view) and
+  // only appears later once the person navigates back to the archive.
+  // A plain useRef would only ever see the node from the very first
+  // render, so if it was null then, the observer would never attach.
+  const [node, setNode] = useState(null)
   const [visible, setVisible] = useState(false)
 
-  useEffect(() => {
-    const node = ref.current
+  const ref = useCallback((element) => {
+    setNode(element)
+  }, [])
 
+  useEffect(() => {
     if (!node) {
       return undefined
     }
 
     if (typeof IntersectionObserver === 'undefined') {
       setVisible(true)
+      return undefined
+    }
+
+    if (visible) {
       return undefined
     }
 
@@ -68,7 +81,7 @@ function useReveal() {
     observer.observe(node)
 
     return () => observer.disconnect()
-  }, [])
+  }, [node, visible])
 
   return [ref, visible]
 }
