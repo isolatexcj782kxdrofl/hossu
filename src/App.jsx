@@ -129,6 +129,21 @@ function App() {
     window.scrollTo(0, 0)
   }
 
+  const goToPieces = (event) => {
+    if (view === 'home') {
+      return
+    }
+
+    event.preventDefault()
+    openView('home')
+
+    requestAnimationFrame(() => {
+      document
+        .getElementById('archive')
+        ?.scrollIntoView({ behavior: 'smooth' })
+    })
+  }
+
   const openProduct = () => {
     setAddedToBag(false)
     setSelectedSize('')
@@ -289,6 +304,10 @@ function App() {
           >
             Archive
           </button>
+
+          <a href="#archive" onClick={goToPieces}>
+            Pieces
+          </a>
         </nav>
 
         <button
