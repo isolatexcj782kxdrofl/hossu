@@ -289,8 +289,6 @@ function App() {
           >
             Archive
           </button>
-
-          <a href="#contact">Contact</a>
         </nav>
 
         <button
@@ -351,6 +349,10 @@ function App() {
                 ref={archiveRef}
               >
                 <div>
+                  <span className="label">
+                    ARCHIVE / 001
+                  </span>
+
                   <h2>SELECTED PIECES</h2>
                 </div>
 
@@ -702,6 +704,10 @@ function App() {
                 </div>
 
                 <aside className="checkout">
+                  <span className="label">
+                    ORDER SUMMARY
+                  </span>
+
                   <div className="checkout-line">
                     <span>SUBTOTAL</span>
 

@@ -325,6 +325,20 @@ main,
   padding: 110px 42px 130px;
 }
 
+.label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #696966;
+
+  font-family: 'DM Mono', monospace;
+  font-size: 0.55rem;
+
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .reveal {
   opacity: 0;
   transform: translateY(28px);
