@@ -70,35 +70,22 @@ export async function onRequestPost(context) {
     const { items } = body
 
     if (!Array.isArray(items) || items.length === 0) {
-      return json(
-        {
-          error: 'Your bag is empty.',
-        },
-        400,
-      )
+      return json({ error: 'Your bag is empty.' }, 400)
     }
 
     if (items.length > 20) {
       return json(
-        {
-          error: 'Too many different items.',
-        },
+        { error: 'Too many different items.' },
         400,
       )
     }
 
-    const origin = new URL(
-      context.request.url,
-    ).origin
+    const origin = new URL(context.request.url).origin
 
     const form = new URLSearchParams()
 
     form.append('mode', 'payment')
-
-    form.append(
-      'billing_address_collection',
-      'required',
-    )
+    form.append('billing_address_collection', 'required')
 
     form.append(
       'shipping_address_collection[allowed_countries][0]',
@@ -106,9 +93,10 @@ export async function onRequestPost(context) {
     )
 
     /*
-     * Stripe replaces {CHECKOUT_SESSION_ID}
-     * with the real Checkout Session ID when
-     * redirecting the customer back to your site.
+     * {CHECKOUT_SESSION_ID} is a Stripe template placeholder — Stripe
+     * substitutes it with the real session id when it redirects the
+     * buyer back, so the success page can look the order up (via
+     * /api/order-details) and show them the order id / total.
      */
     form.append(
       'success_url',
@@ -133,13 +121,10 @@ export async function onRequestPost(context) {
         throw new Error('Invalid size.')
       }
 
-      const variantId =
-        VARIANTS[item.color][item.size]
+      const variantId = VARIANTS[item.color][item.size]
 
       if (!variantId) {
-        throw new Error(
-          'That colour/size combination is unavailable.',
-        )
+        throw new Error('That colour/size combination is unavailable.')
       }
 
       const quantity = Math.max(
@@ -150,16 +135,13 @@ export async function onRequestPost(context) {
         ),
       )
 
-      const amount = [
-        '3XL',
-        '4XL',
-        '5XL',
-      ].includes(item.size)
+      const amount = ['3XL', '4XL', '5XL'].includes(
+        item.size,
+      )
         ? 2699
         : 2499
 
-      const colorName =
-        COLOR_NAMES[item.color]
+      const colorName = COLOR_NAMES[item.color]
 
       const imageUrl =
         `${origin}/images/mockups/grumpy-vampire_${item.color}.jpg`
@@ -193,19 +175,23 @@ export async function onRequestPost(context) {
         `line_items[${index}][quantity]`,
         String(quantity),
       )
+
+      /*
+       * Stripe line-item metadata is not available directly
+       * on price_data, so the complete order mapping is stored
+       * on the Checkout Session below.
+       */
     })
 
     /*
      * Store the validated cart in Stripe metadata.
      *
-     * Your webhook can use this later to create
-     * the Printify order after Stripe confirms payment.
+     * This lets the webhook know exactly which Printify
+     * variant was purchased after Stripe confirms payment.
      */
-
     const orderItems = items.map((item) => ({
       productId: PRODUCT_ID,
-      variantId:
-        VARIANTS[item.color][item.size],
+      variantId: VARIANTS[item.color][item.size],
       color: item.color,
       size: item.size,
       quantity: Math.max(
@@ -217,14 +203,13 @@ export async function onRequestPost(context) {
       ),
     }))
 
-    const orderJson = JSON.stringify(
-      orderItems,
-    )
+    const orderJson = JSON.stringify(orderItems)
 
     /*
-     * Stripe metadata values have a size limit.
+     * Stripe metadata values have a size limit, so refuse
+     * an unexpectedly large cart rather than silently
+     * truncating it.
      */
-
     if (orderJson.length > 450) {
       return json(
         {
@@ -262,14 +247,10 @@ export async function onRequestPost(context) {
       },
     )
 
-    const session =
-      await stripeResponse.json()
+    const session = await stripeResponse.json()
 
     if (!stripeResponse.ok) {
-      console.error(
-        'Stripe error:',
-        session,
-      )
+      console.error('Stripe error:', session)
 
       return json(
         {
@@ -283,13 +264,9 @@ export async function onRequestPost(context) {
 
     return json({
       url: session.url,
-      sessionId: session.id,
     })
   } catch (error) {
-    console.error(
-      'Checkout error:',
-      error,
-    )
+    console.error('Checkout error:', error)
 
     return json(
       {
@@ -303,15 +280,11 @@ export async function onRequestPost(context) {
 }
 
 function json(data, status = 200) {
-  return new Response(
-    JSON.stringify(data),
-    {
-      status,
+  return new Response(JSON.stringify(data), {
+    status,
 
-      headers: {
-        'Content-Type':
-          'application/json',
-      },
+    headers: {
+      'Content-Type': 'application/json',
     },
-  )
+  })
 }

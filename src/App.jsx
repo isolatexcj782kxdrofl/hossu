@@ -36,6 +36,9 @@ const product = {
 const getPrice = (size) =>
   ['3XL', '4XL', '5XL'].includes(size) ? 26.99 : 24.99
 
+// Triggers once, the first time the element scrolls into view — used to
+// bring the archive and contact sections in gently instead of them just
+// snapping into place.
 function useReveal() {
   const ref = useRef(null)
   const [visible, setVisible] = useState(false)
@@ -59,10 +62,7 @@ function useReveal() {
           observer.unobserve(node)
         }
       },
-      {
-        threshold: 0.15,
-        rootMargin: '0px 0px -60px 0px',
-      },
+      { threshold: 0.15, rootMargin: '0px 0px -60px 0px' },
     )
 
     observer.observe(node)
@@ -73,28 +73,35 @@ function useReveal() {
   return [ref, visible]
 }
 
+// Reads ?checkout=success|cancelled and ?session_id=... from the URL once,
+// on first load. Stripe (or whatever's building the success_url) appends
+// session_id automatically if the URL template includes
+// {CHECKOUT_SESSION_ID}.
+function getCheckoutParams() {
+  if (typeof window === 'undefined') {
+    return { status: null, sessionId: null }
+  }
+
+  const params = new URLSearchParams(window.location.search)
+
+  return {
+    status: params.get('checkout'),
+    sessionId: params.get('session_id'),
+  }
+}
+
 function App() {
-  const checkoutParams = new URLSearchParams(
-    window.location.search,
-  )
+  const initialCheckout = useRef(getCheckoutParams()).current
 
-  const checkoutStatus = checkoutParams.get('checkout')
-  const checkoutSession = checkoutParams.get('session_id')
-
-  const [view, setView] = useState(
-    checkoutStatus === 'success'
-      ? 'success'
-      : checkoutStatus === 'cancelled'
-        ? 'cancelled'
-        : 'home',
-  )
-
+  const [view, setView] = useState(() => {
+    if (initialCheckout.status === 'success') return 'order-success'
+    if (initialCheckout.status === 'cancelled') return 'order-cancelled'
+    return 'home'
+  })
   const [selectedColour, setSelectedColour] = useState(
     product.colours[0],
   )
-
   const [selectedSize, setSelectedSize] = useState('')
-
   const [bag, setBag] = useState(() => {
     try {
       const savedBag = localStorage.getItem('hossu-bag')
@@ -105,23 +112,34 @@ function App() {
 
       const parsedBag = JSON.parse(savedBag)
 
-      return Array.isArray(parsedBag) ? parsedBag : []
+      return Array.isArray(parsedBag)
+        ? parsedBag
+        : []
     } catch {
       return []
     }
   })
-
   const [message, setMessage] = useState('')
   const [addedToBag, setAddedToBag] = useState(false)
   const [checkoutLoading, setCheckoutLoading] =
     useState(false)
-  const [checkoutError, setCheckoutError] = useState('')
+  const [checkoutError, setCheckoutError] =
+    useState('')
   const [bagBump, setBagBump] = useState(false)
+
+  const [orderId, setOrderId] = useState(
+    initialCheckout.sessionId,
+  )
+  const [orderDetails, setOrderDetails] = useState(null)
+  const [orderLoading, setOrderLoading] = useState(
+    Boolean(initialCheckout.sessionId),
+  )
 
   const [archiveRef, archiveVisible] = useReveal()
   const [gridRef, gridVisible] = useReveal()
   const [contactRef, contactVisible] = useReveal()
 
+  // Save the bag whenever it changes.
   useEffect(() => {
     try {
       localStorage.setItem(
@@ -129,44 +147,70 @@ function App() {
         JSON.stringify(bag),
       )
     } catch {
-      console.error('Unable to save Hossu bag.')
+      console.error(
+        'Unable to save Hossu bag.',
+      )
     }
   }, [bag])
 
-  /*
-   * Once Stripe has redirected the customer back to Hossu
-   * after a successful payment, clear the local shopping bag.
-   */
+  // Runs once on load if we landed here from Stripe. Clears the bag on a
+  // successful order, strips the ?checkout=... query string so a refresh
+  // doesn't replay the same state, and (if a session id is present) asks
+  // the backend for the order details to show on the confirmation page.
   useEffect(() => {
-    if (checkoutStatus === 'success') {
+    if (!initialCheckout.status) {
+      return
+    }
+
+    if (initialCheckout.status === 'success') {
       setBag([])
     }
-  }, [checkoutStatus])
 
-  const clearCheckoutUrl = () => {
     window.history.replaceState(
       {},
-      document.title,
+      '',
       window.location.pathname,
     )
-  }
+
+    if (
+      initialCheckout.status === 'success' &&
+      initialCheckout.sessionId
+    ) {
+      fetch(
+        `/api/order-details?session_id=${encodeURIComponent(
+          initialCheckout.sessionId,
+        )}`,
+      )
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Unable to load order details.')
+          }
+          return response.json()
+        })
+        .then((data) => {
+          setOrderDetails(data)
+          if (data?.orderId) {
+            setOrderId(data.orderId)
+          }
+        })
+        .catch(() => {
+          // No backend endpoint yet, or it failed — the confirmation
+          // page still works fine with just the session id.
+        })
+        .finally(() => {
+          setOrderLoading(false)
+        })
+    } else {
+      setOrderLoading(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const openView = (nextView) => {
     setView(nextView)
     setMessage('')
     setCheckoutError('')
-
-    if (
-      nextView !== 'success' &&
-      nextView !== 'cancelled'
-    ) {
-      clearCheckoutUrl()
-    }
-
-    window.scrollTo({
-      top: 0,
-      behavior: 'instant',
-    })
+    window.scrollTo(0, 0)
   }
 
   const goToPieces = (event) => {
@@ -175,15 +219,12 @@ function App() {
     }
 
     event.preventDefault()
-
     openView('home')
 
     requestAnimationFrame(() => {
       document
         .getElementById('archive')
-        ?.scrollIntoView({
-          behavior: 'smooth',
-        })
+        ?.scrollIntoView({ behavior: 'smooth' })
     })
   }
 
@@ -238,7 +279,6 @@ function App() {
     setAddedToBag(true)
 
     setBagBump(true)
-
     setTimeout(() => {
       setBagBump(false)
     }, 500)
@@ -307,22 +347,12 @@ function App() {
       console.error(error)
 
       setCheckoutError(
-        error?.message ||
+        error.message ||
           'Something went wrong. Please try again.',
       )
 
       setCheckoutLoading(false)
     }
-  }
-
-  const retryCheckout = () => {
-    clearCheckoutUrl()
-    setView('bag')
-    setCheckoutError('')
-    window.scrollTo({
-      top: 0,
-      behavior: 'instant',
-    })
   }
 
   const bagCount = bag.reduce(
@@ -417,9 +447,7 @@ function App() {
             >
               <div
                 className={`archive-header reveal ${
-                  archiveVisible
-                    ? 'is-visible'
-                    : ''
+                  archiveVisible ? 'is-visible' : ''
                 }`}
                 ref={archiveRef}
               >
@@ -436,9 +464,7 @@ function App() {
 
               <div
                 className={`product-grid reveal reveal-delay ${
-                  gridVisible
-                    ? 'is-visible'
-                    : ''
+                  gridVisible ? 'is-visible' : ''
                 }`}
                 ref={gridRef}
               >
@@ -449,9 +475,7 @@ function App() {
                 >
                   <div className="product-image">
                     <img
-                      src={
-                        product.colours[0].image
-                      }
+                      src={product.colours[0].image}
                       alt={product.name}
                     />
 
@@ -485,9 +509,7 @@ function App() {
 
             <section
               className={`contact reveal ${
-                contactVisible
-                  ? 'is-visible'
-                  : ''
+                contactVisible ? 'is-visible' : ''
               }`}
               id="contact"
               ref={contactRef}
@@ -822,9 +844,7 @@ function App() {
                   <button
                     type="button"
                     className={`checkout-button ${
-                      checkoutLoading
-                        ? 'is-loading'
-                        : ''
+                      checkoutLoading ? 'is-loading' : ''
                     }`}
                     onClick={checkout}
                     disabled={checkoutLoading}
@@ -850,93 +870,113 @@ function App() {
           </section>
         )}
 
-        {view === 'success' && (
-          <section className="checkout-result success-result">
-            <div className="checkout-result-inner">
-              <span className="checkout-result-mark">
+        {view === 'order-success' && (
+          <section className="order-page">
+            <div className="order-card">
+              <span className="order-status-icon success">
                 ✓
               </span>
 
               <span className="label">
-                ORDER / CONFIRMED
+                ORDER CONFIRMED
               </span>
 
-              <h1>
-                THANK
-                <br />
-                <span>YOU.</span>
-              </h1>
+              <h1>THANK YOU.</h1>
 
-              <p className="checkout-result-copy">
-                YOUR ORDER HAS BEEN RECEIVED.
-                THANK YOU FOR SUPPORTING HOSSU.
-                WE'LL TAKE CARE OF THE REST.
+              <p className="order-copy">
+                Your order's in — we'll get it packed
+                and shipped shortly. A confirmation
+                email is on its way to you.
               </p>
 
-              {checkoutSession && (
-                <div className="order-reference">
-                  <span>ORDER REFERENCE</span>
-                  <strong>
-                    {checkoutSession}
-                  </strong>
+              {orderLoading ? (
+                <p className="order-loading">
+                  LOADING ORDER DETAILS...
+                </p>
+              ) : (
+                <div className="order-details">
+                  {orderId && (
+                    <div className="order-detail-line">
+                      <span>ORDER ID</span>
+                      <span>{orderId}</span>
+                    </div>
+                  )}
+
+                  {orderDetails?.email && (
+                    <div className="order-detail-line">
+                      <span>EMAIL</span>
+                      <span>{orderDetails.email}</span>
+                    </div>
+                  )}
+
+                  {orderDetails?.total && (
+                    <div className="order-detail-line">
+                      <span>TOTAL</span>
+                      <span>
+                        £
+                        {Number(
+                          orderDetails.total,
+                        ).toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+
+                  {!orderId && !orderDetails && (
+                    <p className="order-loading">
+                      Check your inbox — your receipt
+                      has the full order details.
+                    </p>
+                  )}
                 </div>
               )}
 
-              <div className="checkout-result-actions">
-                <button
-                  type="button"
-                  className="result-primary-button"
-                  onClick={() =>
-                    openView('home')
-                  }
-                >
-                  CONTINUE SHOPPING →
-                </button>
-              </div>
+              <button
+                type="button"
+                className="add-button order-button"
+                onClick={() => openView('home')}
+              >
+                <span>CONTINUE SHOPPING</span>
+                <span>→</span>
+              </button>
             </div>
           </section>
         )}
 
-        {view === 'cancelled' && (
-          <section className="checkout-result cancelled-result">
-            <div className="checkout-result-inner">
-              <span className="checkout-result-mark">
-                ×
+        {view === 'order-cancelled' && (
+          <section className="order-page">
+            <div className="order-card">
+              <span className="order-status-icon failed">
+                ✕
               </span>
 
               <span className="label">
-                CHECKOUT / CANCELLED
+                PURCHASE NOT COMPLETED
               </span>
 
-              <h1>
-                PAYMENT
-                <br />
-                <span>FAILED.</span>
-              </h1>
+              <h1>CHECKOUT CANCELLED.</h1>
 
-              <p className="checkout-result-copy">
-                YOUR PAYMENT WAS NOT COMPLETED.
-                YOUR ITEMS ARE STILL IN YOUR BAG,
-                SO NOTHING HAS BEEN LOST.
+              <p className="order-copy">
+                Your payment didn't go through and you
+                haven't been charged. Your bag is still
+                saved if you'd like to try again.
               </p>
 
-              <div className="checkout-result-actions">
+              <div className="order-page-actions">
                 <button
                   type="button"
-                  className="result-primary-button"
-                  onClick={retryCheckout}
+                  className="add-button order-button"
+                  onClick={() => openView('bag')}
                 >
-                  RETRY PURCHASE →
+                  <span>RETRY PURCHASE</span>
+                  <span>→</span>
                 </button>
 
                 <button
                   type="button"
-                  className="result-secondary-button"
-                  onClick={() =>
-                    openView('home')
-                  }
+                  className="continue-shopping order-button-secondary"
+                  onClick={() => openView('home')}
                 >
-                  BACK TO SHOPPING
+                  CLOSE / BACK TO SHOPPING
                 </button>
               </div>
             </div>
