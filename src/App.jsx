@@ -60,6 +60,12 @@ const catalogProducts = [
 const getPrice = (size) =>
   ['3XL', '4XL', '5XL'].includes(size) ? 26.99 : 24.99
 
+const preventImageInteraction = (event) => {
+  if (event.target?.tagName === 'IMG') {
+    event.preventDefault()
+  }
+}
+
 // Triggers once, the first time the element scrolls into view — used to
 // bring the archive and contact sections in gently instead of them just
 // snapping into place.
@@ -404,7 +410,11 @@ function App() {
   )
 
   return (
-    <div className="site">
+    <div
+      className="site"
+      onContextMenu={preventImageInteraction}
+      onDragStart={preventImageInteraction}
+    >
       <header className="header">
         <button
           className="logo"
