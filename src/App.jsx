@@ -36,9 +36,6 @@ const product = {
 const getPrice = (size) =>
   ['3XL', '4XL', '5XL'].includes(size) ? 26.99 : 24.99
 
-// Triggers once, the first time the element scrolls into view — used to
-// bring the archive and contact sections in gently instead of them just
-// snapping into place.
 function useReveal() {
   const ref = useRef(null)
   const [visible, setVisible] = useState(false)
@@ -62,7 +59,10 @@ function useReveal() {
           observer.unobserve(node)
         }
       },
-      { threshold: 0.15, rootMargin: '0px 0px -60px 0px' },
+      {
+        threshold: 0.15,
+        rootMargin: '0px 0px -60px 0px',
+      },
     )
 
     observer.observe(node)
@@ -74,11 +74,27 @@ function useReveal() {
 }
 
 function App() {
-  const [view, setView] = useState('home')
+  const checkoutParams = new URLSearchParams(
+    window.location.search,
+  )
+
+  const checkoutStatus = checkoutParams.get('checkout')
+  const checkoutSession = checkoutParams.get('session_id')
+
+  const [view, setView] = useState(
+    checkoutStatus === 'success'
+      ? 'success'
+      : checkoutStatus === 'cancelled'
+        ? 'cancelled'
+        : 'home',
+  )
+
   const [selectedColour, setSelectedColour] = useState(
     product.colours[0],
   )
+
   const [selectedSize, setSelectedSize] = useState('')
+
   const [bag, setBag] = useState(() => {
     try {
       const savedBag = localStorage.getItem('hossu-bag')
@@ -89,26 +105,23 @@ function App() {
 
       const parsedBag = JSON.parse(savedBag)
 
-      return Array.isArray(parsedBag)
-        ? parsedBag
-        : []
+      return Array.isArray(parsedBag) ? parsedBag : []
     } catch {
       return []
     }
   })
+
   const [message, setMessage] = useState('')
   const [addedToBag, setAddedToBag] = useState(false)
   const [checkoutLoading, setCheckoutLoading] =
     useState(false)
-  const [checkoutError, setCheckoutError] =
-    useState('')
+  const [checkoutError, setCheckoutError] = useState('')
   const [bagBump, setBagBump] = useState(false)
 
   const [archiveRef, archiveVisible] = useReveal()
   const [gridRef, gridVisible] = useReveal()
   const [contactRef, contactVisible] = useReveal()
 
-  // Save the bag whenever it changes.
   useEffect(() => {
     try {
       localStorage.setItem(
@@ -116,17 +129,44 @@ function App() {
         JSON.stringify(bag),
       )
     } catch {
-      console.error(
-        'Unable to save Hossu bag.',
-      )
+      console.error('Unable to save Hossu bag.')
     }
   }, [bag])
+
+  /*
+   * Once Stripe has redirected the customer back to Hossu
+   * after a successful payment, clear the local shopping bag.
+   */
+  useEffect(() => {
+    if (checkoutStatus === 'success') {
+      setBag([])
+    }
+  }, [checkoutStatus])
+
+  const clearCheckoutUrl = () => {
+    window.history.replaceState(
+      {},
+      document.title,
+      window.location.pathname,
+    )
+  }
 
   const openView = (nextView) => {
     setView(nextView)
     setMessage('')
     setCheckoutError('')
-    window.scrollTo(0, 0)
+
+    if (
+      nextView !== 'success' &&
+      nextView !== 'cancelled'
+    ) {
+      clearCheckoutUrl()
+    }
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'instant',
+    })
   }
 
   const goToPieces = (event) => {
@@ -135,12 +175,15 @@ function App() {
     }
 
     event.preventDefault()
+
     openView('home')
 
     requestAnimationFrame(() => {
       document
         .getElementById('archive')
-        ?.scrollIntoView({ behavior: 'smooth' })
+        ?.scrollIntoView({
+          behavior: 'smooth',
+        })
     })
   }
 
@@ -195,6 +238,7 @@ function App() {
     setAddedToBag(true)
 
     setBagBump(true)
+
     setTimeout(() => {
       setBagBump(false)
     }, 500)
@@ -263,12 +307,22 @@ function App() {
       console.error(error)
 
       setCheckoutError(
-        error.message ||
+        error?.message ||
           'Something went wrong. Please try again.',
       )
 
       setCheckoutLoading(false)
     }
+  }
+
+  const retryCheckout = () => {
+    clearCheckoutUrl()
+    setView('bag')
+    setCheckoutError('')
+    window.scrollTo({
+      top: 0,
+      behavior: 'instant',
+    })
   }
 
   const bagCount = bag.reduce(
@@ -363,7 +417,9 @@ function App() {
             >
               <div
                 className={`archive-header reveal ${
-                  archiveVisible ? 'is-visible' : ''
+                  archiveVisible
+                    ? 'is-visible'
+                    : ''
                 }`}
                 ref={archiveRef}
               >
@@ -380,7 +436,9 @@ function App() {
 
               <div
                 className={`product-grid reveal reveal-delay ${
-                  gridVisible ? 'is-visible' : ''
+                  gridVisible
+                    ? 'is-visible'
+                    : ''
                 }`}
                 ref={gridRef}
               >
@@ -391,7 +449,9 @@ function App() {
                 >
                   <div className="product-image">
                     <img
-                      src={product.colours[0].image}
+                      src={
+                        product.colours[0].image
+                      }
                       alt={product.name}
                     />
 
@@ -425,7 +485,9 @@ function App() {
 
             <section
               className={`contact reveal ${
-                contactVisible ? 'is-visible' : ''
+                contactVisible
+                  ? 'is-visible'
+                  : ''
               }`}
               id="contact"
               ref={contactRef}
@@ -760,7 +822,9 @@ function App() {
                   <button
                     type="button"
                     className={`checkout-button ${
-                      checkoutLoading ? 'is-loading' : ''
+                      checkoutLoading
+                        ? 'is-loading'
+                        : ''
                     }`}
                     onClick={checkout}
                     disabled={checkoutLoading}
@@ -783,6 +847,99 @@ function App() {
                 </aside>
               </div>
             )}
+          </section>
+        )}
+
+        {view === 'success' && (
+          <section className="checkout-result success-result">
+            <div className="checkout-result-inner">
+              <span className="checkout-result-mark">
+                ✓
+              </span>
+
+              <span className="label">
+                ORDER / CONFIRMED
+              </span>
+
+              <h1>
+                THANK
+                <br />
+                <span>YOU.</span>
+              </h1>
+
+              <p className="checkout-result-copy">
+                YOUR ORDER HAS BEEN RECEIVED.
+                THANK YOU FOR SUPPORTING HOSSU.
+                WE'LL TAKE CARE OF THE REST.
+              </p>
+
+              {checkoutSession && (
+                <div className="order-reference">
+                  <span>ORDER REFERENCE</span>
+                  <strong>
+                    {checkoutSession}
+                  </strong>
+                </div>
+              )}
+
+              <div className="checkout-result-actions">
+                <button
+                  type="button"
+                  className="result-primary-button"
+                  onClick={() =>
+                    openView('home')
+                  }
+                >
+                  CONTINUE SHOPPING →
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {view === 'cancelled' && (
+          <section className="checkout-result cancelled-result">
+            <div className="checkout-result-inner">
+              <span className="checkout-result-mark">
+                ×
+              </span>
+
+              <span className="label">
+                CHECKOUT / CANCELLED
+              </span>
+
+              <h1>
+                PAYMENT
+                <br />
+                <span>FAILED.</span>
+              </h1>
+
+              <p className="checkout-result-copy">
+                YOUR PAYMENT WAS NOT COMPLETED.
+                YOUR ITEMS ARE STILL IN YOUR BAG,
+                SO NOTHING HAS BEEN LOST.
+              </p>
+
+              <div className="checkout-result-actions">
+                <button
+                  type="button"
+                  className="result-primary-button"
+                  onClick={retryCheckout}
+                >
+                  RETRY PURCHASE →
+                </button>
+
+                <button
+                  type="button"
+                  className="result-secondary-button"
+                  onClick={() =>
+                    openView('home')
+                  }
+                >
+                  BACK TO SHOPPING
+                </button>
+              </div>
+            </div>
           </section>
         )}
       </main>

@@ -46,26 +46,20 @@ a {
 
 .site {
   position: relative;
-
   min-height: 100vh;
   overflow-x: hidden;
   background: #0a0a0a;
 }
 
-/* faint film-grain layer, sits under everything, never blocks clicks */
 .site::before {
   content: '';
-
   position: fixed;
   inset: 0;
   z-index: 1;
-
   opacity: 0.035;
   mix-blend-mode: overlay;
   pointer-events: none;
-
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-
   animation: grainShift 9s steps(6) infinite;
 }
 
@@ -84,37 +78,27 @@ main,
   z-index: 100;
   top: 0;
   left: 0;
-
   width: 100%;
   height: 72px;
-
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-
   padding: 0 32px;
-
   background: rgba(10, 10, 10, 0.94);
   border-bottom: 1px solid #202020;
-
   backdrop-filter: blur(10px);
 }
 
 .logo {
   width: 38px;
   height: 38px;
-
   display: flex;
   align-items: center;
   justify-content: flex-start;
-
   padding: 0;
-
   border: 0;
   background: transparent;
-
   cursor: pointer;
-
   transition: transform 0.4s var(--ease-out);
 }
 
@@ -129,7 +113,6 @@ main,
 .logo img {
   width: 30px;
   height: 30px;
-
   object-fit: contain;
 }
 
@@ -144,17 +127,12 @@ main,
 .bag {
   border: 0;
   background: transparent;
-
   color: #a5a5a0;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.6rem;
-
   letter-spacing: 0.08em;
   text-transform: uppercase;
-
   cursor: pointer;
-
   transition: color 0.25s var(--ease-out);
 }
 
@@ -166,16 +144,12 @@ main,
 .nav button::after,
 .nav a::after {
   content: '';
-
   position: absolute;
   left: 0;
   right: 100%;
   bottom: -5px;
-
   height: 1px;
-
   background: currentColor;
-
   transition: right 0.4s var(--ease-out);
 }
 
@@ -205,50 +179,36 @@ main,
 
 .hero {
   position: relative;
-
   min-height: 100vh;
-
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-
   padding: 112px 42px 42px;
-
   border-bottom: 1px solid #202020;
 }
 
 .hero-meta {
   display: flex;
   justify-content: space-between;
-
   color: #696966;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.58rem;
-
   letter-spacing: 0.08em;
-
   animation: fadeUp 0.8s var(--ease-out) both;
 }
 
 .hero-title {
   width: 100%;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   padding: 30px 0;
-
   animation: fadeUp 0.9s var(--ease-out) 0.12s both;
 }
-
-/* BIGGER HOSSU LOGO */
 
 .hero-title img {
   width: min(1000px, 92vw);
   max-height: 400px;
-
   object-fit: contain;
 }
 
@@ -256,18 +216,14 @@ main,
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: end;
-
   animation: fadeUp 0.9s var(--ease-out) 0.22s both;
 }
 
 .hero-bottom p {
   margin: 0;
-
   color: #696966;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.58rem;
-
   line-height: 1.6;
   letter-spacing: 0.08em;
 }
@@ -278,16 +234,11 @@ main,
 
 .enter {
   padding: 12px 18px;
-
   border: 1px solid #343434;
-
   color: #bdbdb8;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.6rem;
-
   letter-spacing: 0.08em;
-
   transition:
     color 0.3s var(--ease-out),
     background 0.3s var(--ease-out),
@@ -297,9 +248,7 @@ main,
 
 .enter span {
   display: inline-block;
-
   margin-left: 20px;
-
   transition: transform 0.3s var(--ease-out);
 }
 
@@ -327,14 +276,10 @@ main,
 
 .label {
   display: block;
-
   margin-bottom: 8px;
-
   color: #696966;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.55rem;
-
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -342,7 +287,6 @@ main,
 .reveal {
   opacity: 0;
   transform: translateY(28px);
-
   transition:
     opacity 0.9s var(--ease-out),
     transform 0.9s var(--ease-out);
@@ -361,34 +305,25 @@ main,
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-
   margin-bottom: 60px;
-
   border-bottom: 1px solid #292929;
   padding-bottom: 22px;
 }
 
 .archive-header h2 {
   margin: 8px 0 0;
-
   font-size: clamp(2.5rem, 6vw, 6rem);
-
   font-weight: 500;
   line-height: 0.9;
-
   letter-spacing: -0.06em;
 }
 
 .archive-header > span {
   color: #696966;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.55rem;
-
   letter-spacing: 0.08em;
 }
-
-/* SMALLER PRODUCT GRID */
 
 .product-grid {
   display: grid;
@@ -399,26 +334,18 @@ main,
 .product-card {
   width: 100%;
   max-width: 620px;
-
   padding: 0;
-
   border: 0;
   background: transparent;
-
   text-align: left;
-
   cursor: pointer;
 }
 
 .product-image {
   position: relative;
-
   aspect-ratio: 1 / 1;
-
   overflow: hidden;
-
   background: #111;
-
   transition: box-shadow 0.5s var(--ease-out);
 }
 
@@ -429,11 +356,8 @@ main,
 .product-image img {
   width: 100%;
   height: 100%;
-
   display: block;
-
   object-fit: cover;
-
   transition:
     transform 0.7s var(--ease-out),
     filter 0.5s ease;
@@ -446,16 +370,15 @@ main,
 
 .product-image::after {
   content: '';
-
   position: absolute;
   inset: auto 0 0 0;
-
   height: 45%;
-
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent);
-
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.55),
+    transparent
+  );
   opacity: 0;
-
   transition: opacity 0.5s var(--ease-out);
   pointer-events: none;
 }
@@ -468,9 +391,7 @@ main,
   position: absolute;
   top: 16px;
   left: 16px;
-
   color: #777;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.55rem;
 }
@@ -479,21 +400,14 @@ main,
   position: absolute;
   right: 16px;
   bottom: 16px;
-
   padding: 8px 10px;
-
   background: rgba(10, 10, 10, 0.75);
-
   color: #ddd;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.55rem;
-
   letter-spacing: 0.08em;
-
   opacity: 0;
   transform: translateY(8px);
-
   transition:
     opacity 0.4s var(--ease-out),
     transform 0.4s var(--ease-out);
@@ -508,30 +422,23 @@ main,
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-
   padding: 17px 2px 0;
 }
 
 .product-info span,
 .product-type {
   color: #6e6e6b;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.55rem;
-
   letter-spacing: 0.07em;
 }
 
 .product-info h3 {
   margin: 7px 0 5px;
-
   color: #deddd7;
-
   font-size: 1rem;
-
   font-weight: 500;
   letter-spacing: -0.02em;
-
   transition: color 0.4s var(--ease-out);
 }
 
@@ -549,35 +456,26 @@ main,
 
 .contact {
   min-height: 75vh;
-
   display: flex;
   flex-direction: column;
   justify-content: center;
-
   padding: 100px 42px;
-
   border-top: 1px solid #202020;
 }
 
 .contact-label {
   margin-bottom: 40px;
-
   color: #686865;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.55rem;
-
   letter-spacing: 0.1em;
 }
 
 .contact h2 {
   margin: 0;
-
   font-size: clamp(5rem, 15vw, 15rem);
-
   font-weight: 500;
   line-height: 0.78;
-
   letter-spacing: -0.08em;
 }
 
@@ -587,48 +485,34 @@ main,
 
 .email {
   position: relative;
-
   width: fit-content;
-
   margin-top: 60px;
-
   padding-bottom: 7px;
-
   color: #c5c4be;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.65rem;
-
   letter-spacing: 0.08em;
-
   transition: color 0.3s var(--ease-out);
 }
 
 .email::after {
   content: '';
-
   position: absolute;
   left: 0;
   bottom: 0;
-
   width: 100%;
   height: 1px;
-
   background: #555;
 }
 
 .email::before {
   content: '';
-
   position: absolute;
   left: 0;
   bottom: 0;
-
   width: 0%;
   height: 1px;
-
   background: #fff;
-
   transition: width 0.45s var(--ease-out);
 }
 
@@ -646,27 +530,19 @@ main,
 
 .product-page {
   min-height: 100vh;
-
   padding: 120px 42px 100px;
-
   animation: pageIn 0.6s var(--ease-out) both;
 }
 
 .back-button {
   padding: 0;
-
   border: 0;
   background: transparent;
-
   color: #686865;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.55rem;
-
   letter-spacing: 0.08em;
-
   cursor: pointer;
-
   transition: color 0.25s var(--ease-out);
 }
 
@@ -674,40 +550,38 @@ main,
   color: #fff;
 }
 
+/*
+ * PRODUCT LAYOUT
+ *
+ * The image and information now sit inside the same
+ * max-width container, with a controlled gap.
+ *
+ * Previously the combination of a large grid gap,
+ * max-width information block and negative margin
+ * could make the right side appear detached.
+ */
+
 .product-page-grid {
-  width: min(100%, 1320px);
-
-  margin: 65px auto 0;
-
+  width: min(100%, 1180px);
+  margin: 55px auto 0;
   display: grid;
-
-  grid-template-columns:
-    minmax(0, 1fr)
-    minmax(0, 1fr);
-
-  gap: clamp(45px, 6vw, 90px);
-
+  grid-template-columns: minmax(0, 1.05fr) minmax(380px, 0.95fr);
+  gap: clamp(28px, 4vw, 55px);
   align-items: start;
 }
 
 .product-page-image {
   position: relative;
-
   width: 100%;
-
   background: #111;
-
   aspect-ratio: 1 / 1;
-
   overflow: hidden;
 }
 
 .product-page-image img {
   width: 100%;
   height: 100%;
-
   display: block;
-
   object-fit: cover;
 }
 
@@ -715,76 +589,69 @@ main,
   position: absolute;
   top: 18px;
   left: 18px;
-
   color: #777;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.55rem;
 }
 
-/* PROPERLY CENTRED PRODUCT INFORMATION */
+/*
+ * IMPORTANT:
+ * The information column no longer has the old
+ * negative right margin. Its heading, description,
+ * options and buttons all share the exact same left edge.
+ */
 
 .product-page-info {
-  width: min(100%, 500px);
-
-  justify-self: center;
-
-  margin: 0 -10px 0 0;
-
-  padding-top: 8px;
+  width: 100%;
+  max-width: 500px;
+  justify-self: start;
+  margin: 0;
+  padding-top: 0;
 }
 
 .product-page-heading {
   padding-bottom: 30px;
-
   border-bottom: 1px solid #292929;
 }
 
 .product-page-heading h1 {
   margin: 9px 0 5px;
-
   font-size: clamp(2rem, 4vw, 4rem);
-
   font-weight: 500;
   line-height: 0.95;
-
   letter-spacing: -0.06em;
 }
 
 .product-page-type {
   margin: 0;
-
   color: #70706d;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.55rem;
-
   letter-spacing: 0.08em;
 }
 
 .product-page-price {
   margin: 24px 0 0;
-
   color: #ddd;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.75rem;
-
   letter-spacing: 0.05em;
 }
 
+/*
+ * Description starts exactly where the product name
+ * and all controls start.
+ */
+
 .description {
-  max-width: 400px;
-
+  width: 100%;
+  max-width: none;
   margin: 28px 0 40px;
-
+  padding: 0;
   color: #999994;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.65rem;
-
   line-height: 1.8;
-
   letter-spacing: 0.02em;
 }
 
@@ -799,14 +666,10 @@ main,
 .option-heading {
   display: flex;
   justify-content: space-between;
-
   margin-bottom: 13px;
-
   color: #777;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.55rem;
-
   letter-spacing: 0.07em;
 }
 
@@ -817,33 +680,22 @@ main,
 .colour-options {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-
   gap: 8px;
 }
 
 .colour-button {
   min-height: 45px;
-
   display: flex;
   align-items: center;
-
   gap: 10px;
-
   padding: 9px 11px;
-
   border: 1px solid #282828;
-
   background: transparent;
-
   color: #888;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.52rem;
-
   text-align: left;
-
   cursor: pointer;
-
   transition:
     border-color 0.25s var(--ease-out),
     color 0.25s var(--ease-out),
@@ -867,11 +719,8 @@ main,
 .colour-swatch {
   width: 18px;
   height: 18px;
-
   display: block;
-
   border: 1px solid #444;
-
   transition: transform 0.25s var(--ease-out);
 }
 
@@ -898,24 +747,17 @@ main,
 .size-options {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-
   gap: 6px;
 }
 
 .size-button {
   height: 42px;
-
   border: 1px solid #282828;
-
   background: transparent;
-
   color: #888;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.55rem;
-
   cursor: pointer;
-
   transition:
     background 0.25s var(--ease-out),
     color 0.25s var(--ease-out),
@@ -944,28 +786,18 @@ main,
 
 .add-button {
   width: 100%;
-
   margin-top: 35px;
-
   padding: 18px;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   border: 1px solid #555;
-
   background: #e8e6df;
-
   color: #0a0a0a;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.6rem;
-
   letter-spacing: 0.08em;
-
   cursor: pointer;
-
   transition:
     background 0.25s var(--ease-out),
     color 0.25s var(--ease-out),
@@ -974,7 +806,6 @@ main,
 
 .add-button span:last-child {
   display: inline-block;
-
   transition: transform 0.3s var(--ease-out);
 }
 
@@ -996,65 +827,41 @@ main,
 
 .after-add {
   margin-top: 12px;
-
   padding-top: 16px;
-
   border-top: 1px solid #292929;
-
   animation: fadeUp 0.5s var(--ease-out) both;
 }
 
 .after-add-message {
   display: flex;
-
   align-items: center;
-
   gap: 9px;
-
   margin-bottom: 12px;
-
   color: #777;
-
   font-family: 'DM Mono', monospace;
-
   font-size: 0.55rem;
-
   letter-spacing: 0.08em;
 }
 
 .after-add-message span:first-child {
   display: inline-flex;
-
   color: #aaa;
-
   animation: popIn 0.45s var(--ease-out);
 }
 
 .proceed-button {
   width: 100%;
-
   display: flex;
-
   align-items: center;
-
   justify-content: space-between;
-
   padding: 16px 18px;
-
   border: 1px solid #555;
-
   background: transparent;
-
   color: #ddd;
-
   font-family: 'DM Mono', monospace;
-
   font-size: 0.58rem;
-
   letter-spacing: 0.07em;
-
   cursor: pointer;
-
   transition:
     background 0.25s var(--ease-out),
     color 0.25s var(--ease-out),
@@ -1064,15 +871,12 @@ main,
 
 .proceed-button span:last-child {
   display: inline-block;
-
   transition: transform 0.3s var(--ease-out);
 }
 
 .proceed-button:hover {
   background: #e8e6df;
-
   border-color: #e8e6df;
-
   color: #0a0a0a;
 }
 
@@ -1090,9 +894,7 @@ main,
 
 .bag-page {
   min-height: 100vh;
-
   padding: 125px 42px 100px;
-
   animation: pageIn 0.6s var(--ease-out) both;
 }
 
@@ -1100,39 +902,29 @@ main,
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-
   padding-bottom: 25px;
-
   border-bottom: 1px solid #292929;
 }
 
 .bag-page-header h1 {
   margin: 8px 0 0;
-
   font-size: clamp(3.5rem, 8vw, 8rem);
-
   font-weight: 500;
   line-height: 0.8;
-
   letter-spacing: -0.08em;
 }
 
 .bag-number {
   color: #686865;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.55rem;
-
   letter-spacing: 0.08em;
 }
 
 .bag-layout {
   display: grid;
-
   grid-template-columns: minmax(0, 1fr) 360px;
-
   gap: 70px;
-
   margin-top: 55px;
 }
 
@@ -1143,37 +935,26 @@ main,
 
 .bag-item {
   display: grid;
-
   grid-template-columns: 180px minmax(0, 1fr) auto;
-
   gap: 25px;
-
   padding: 0 0 25px;
   margin-bottom: 25px;
-
   border-bottom: 1px solid #292929;
-
   animation: fadeUp 0.5s var(--ease-out) both;
 }
 
 .bag-item-image {
   width: 180px;
-
   aspect-ratio: 1 / 1;
-
   background: #111;
-
   overflow: hidden;
 }
 
 .bag-item-image img {
   width: 100%;
   height: 100%;
-
   display: block;
-
   object-fit: cover;
-
   transition: transform 0.6s var(--ease-out);
 }
 
@@ -1185,50 +966,37 @@ main,
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-
   padding: 5px 0;
 }
 
 .bag-item-info h2 {
   margin: 8px 0;
-
   font-size: 1.15rem;
-
   font-weight: 500;
-
   letter-spacing: -0.03em;
 }
 
 .bag-item-info p {
   margin: 0;
-
   color: #777;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.55rem;
-
   letter-spacing: 0.06em;
 }
 
 .quantity {
   display: flex;
   align-items: center;
-
   gap: 15px;
 }
 
 .quantity button {
   width: 28px;
   height: 28px;
-
   border: 1px solid #333;
-
   background: transparent;
-
   color: #aaa;
-
   cursor: pointer;
-
   transition:
     border-color 0.2s var(--ease-out),
     color 0.2s var(--ease-out),
@@ -1246,16 +1014,13 @@ main,
 
 .quantity span {
   color: #aaa;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.55rem;
 }
 
 .bag-item-price {
   padding-top: 5px;
-
   color: #ddd;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.6rem;
 }
@@ -1266,9 +1031,7 @@ main,
 
 .checkout {
   align-self: start;
-
   padding: 25px;
-
   border: 1px solid #292929;
 }
 
@@ -1276,68 +1039,46 @@ main,
 .checkout-total {
   display: flex;
   justify-content: space-between;
-
   padding-bottom: 17px;
-
   color: #aaa;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.55rem;
-
   letter-spacing: 0.05em;
 }
 
 .checkout-line.muted {
   padding-bottom: 25px;
-
   color: #555;
-
   line-height: 1.5;
 }
 
 .checkout-total {
   padding-top: 18px;
-
   border-top: 1px solid #333;
-
   color: #ddd;
 }
 
 .checkout-error {
   margin: 0 0 14px;
-
   color: #d98a7c;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.52rem;
-
   line-height: 1.6;
-
   letter-spacing: 0.04em;
-
   animation: fadeUp 0.35s var(--ease-out) both;
 }
 
 .checkout-button {
   width: 100%;
-
   margin-top: 10px;
-
   padding: 17px;
-
   border: 1px solid #e8e6df;
-
   background: #e8e6df;
-
   color: #0a0a0a;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.58rem;
-
   letter-spacing: 0.08em;
-
   cursor: pointer;
-
   transition:
     background 0.25s var(--ease-out),
     transform 0.15s var(--ease-out);
@@ -1358,24 +1099,15 @@ main,
 
 .continue-shopping {
   width: 100%;
-
   margin-top: 12px;
-
   padding: 13px;
-
   border: 0;
-
   background: transparent;
-
   color: #666;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.5rem;
-
   letter-spacing: 0.07em;
-
   cursor: pointer;
-
   transition: color 0.25s var(--ease-out);
 }
 
@@ -1389,45 +1121,31 @@ main,
 
 .empty-bag {
   min-height: 50vh;
-
   display: flex;
   flex-direction: column;
-
   align-items: center;
   justify-content: center;
-
   gap: 25px;
-
   animation: fadeUp 0.6s var(--ease-out) both;
 }
 
 .empty-bag p {
   margin: 0;
-
   color: #666;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.6rem;
-
   letter-spacing: 0.08em;
 }
 
 .empty-bag button {
   padding: 14px 18px;
-
   border: 1px solid #444;
-
   background: transparent;
-
   color: #aaa;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.55rem;
-
   letter-spacing: 0.07em;
-
   cursor: pointer;
-
   transition:
     border-color 0.25s var(--ease-out),
     color 0.25s var(--ease-out),
@@ -1444,22 +1162,161 @@ main,
 }
 
 /* =========================
+   CHECKOUT RESULT PAGES
+========================= */
+
+.checkout-result {
+  min-height: calc(100vh - 72px);
+  padding: 130px 42px 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pageIn 0.65s var(--ease-out) both;
+}
+
+.checkout-result-inner {
+  width: min(100%, 820px);
+  text-align: center;
+}
+
+.checkout-result-mark {
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 30px;
+  border: 1px solid #444;
+  color: #ddd;
+  font-family: 'DM Mono', monospace;
+  font-size: 1.2rem;
+  animation: popIn 0.6s var(--ease-out) both;
+}
+
+.checkout-result .label {
+  margin-bottom: 25px;
+}
+
+.checkout-result h1 {
+  margin: 0;
+  font-size: clamp(5rem, 14vw, 11rem);
+  font-weight: 500;
+  line-height: 0.78;
+  letter-spacing: -0.09em;
+}
+
+.checkout-result h1 span {
+  color: #686865;
+}
+
+.checkout-result-copy {
+  max-width: 520px;
+  margin: 55px auto 0;
+  color: #999994;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  line-height: 1.8;
+  letter-spacing: 0.05em;
+}
+
+.order-reference {
+  width: min(100%, 520px);
+  margin: 35px auto 0;
+  padding: 17px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  border-top: 1px solid #292929;
+  border-bottom: 1px solid #292929;
+}
+
+.order-reference span {
+  color: #686865;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+}
+
+.order-reference strong {
+  overflow-wrap: anywhere;
+  color: #ddd;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+.checkout-result-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: min(100%, 360px);
+  margin: 35px auto 0;
+}
+
+.result-primary-button,
+.result-secondary-button {
+  width: 100%;
+  padding: 17px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition:
+    background 0.25s var(--ease-out),
+    border-color 0.25s var(--ease-out),
+    color 0.25s var(--ease-out),
+    transform 0.15s var(--ease-out);
+}
+
+.result-primary-button {
+  border: 1px solid #e8e6df;
+  background: #e8e6df;
+  color: #0a0a0a;
+}
+
+.result-primary-button:hover {
+  background: #fff;
+}
+
+.result-secondary-button {
+  border: 1px solid #333;
+  background: transparent;
+  color: #888;
+}
+
+.result-secondary-button:hover {
+  border-color: #666;
+  color: #ddd;
+}
+
+.result-primary-button:active,
+.result-secondary-button:active {
+  transform: scale(0.985);
+}
+
+.cancelled-result .checkout-result-mark {
+  color: #d98a7c;
+  border-color: #573630;
+}
+
+.cancelled-result h1 span {
+  color: #8f5d55;
+}
+
+/* =========================
    FOOTER
 ========================= */
 
 .footer {
   display: flex;
   justify-content: space-between;
-
   padding: 25px 42px;
-
   border-top: 1px solid #202020;
-
   color: #4f4f4c;
-
   font-family: 'DM Mono', monospace;
   font-size: 0.5rem;
-
   letter-spacing: 0.07em;
 }
 
@@ -1562,21 +1419,17 @@ main,
 @media (max-width: 1000px) {
   .product-page-grid {
     grid-template-columns: 1fr;
-
-    gap: 50px;
+    gap: 45px;
   }
 
   .product-page-info {
     width: min(100%, 600px);
-
     justify-self: center;
-
     margin: 0 auto;
   }
 
   .bag-layout {
     grid-template-columns: 1fr;
-
     gap: 40px;
   }
 
@@ -1597,7 +1450,6 @@ main,
 @media (max-width: 700px) {
   .header {
     height: 62px;
-
     padding: 0 18px;
   }
 
@@ -1607,7 +1459,6 @@ main,
 
   .hero {
     min-height: 90vh;
-
     padding: 95px 20px 25px;
   }
 
@@ -1622,7 +1473,6 @@ main,
 
   .hero-bottom {
     grid-template-columns: 1fr;
-
     gap: 25px;
   }
 
@@ -1637,7 +1487,8 @@ main,
   .archive,
   .contact,
   .product-page,
-  .bag-page {
+  .bag-page,
+  .checkout-result {
     padding-left: 20px;
     padding-right: 20px;
   }
@@ -1669,13 +1520,11 @@ main,
 
   .product-page-grid {
     margin-top: 40px;
-
     gap: 40px;
   }
 
   .product-page-info {
     width: 100%;
-
     margin: 0;
   }
 
@@ -1693,7 +1542,6 @@ main,
 
   .bag-item {
     grid-template-columns: 100px minmax(0, 1fr);
-
     gap: 15px;
   }
 
@@ -1705,11 +1553,23 @@ main,
     grid-column: 2;
   }
 
+  .checkout-result {
+    min-height: calc(100vh - 62px);
+    padding-top: 100px;
+    padding-bottom: 80px;
+  }
+
+  .checkout-result h1 {
+    font-size: 22vw;
+  }
+
+  .checkout-result-copy {
+    margin-top: 40px;
+  }
+
   .footer {
     flex-direction: column;
-
     gap: 8px;
-
     padding-left: 20px;
     padding-right: 20px;
   }
@@ -1731,9 +1591,7 @@ main,
 
   .archive-header {
     align-items: flex-start;
-
     flex-direction: column;
-
     gap: 20px;
   }
 
@@ -1751,6 +1609,11 @@ main,
 
   .proceed-button {
     font-size: 0.52rem;
+  }
+
+  .checkout-result-mark {
+    width: 50px;
+    height: 50px;
   }
 }
 
