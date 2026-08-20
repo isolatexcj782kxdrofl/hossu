@@ -399,7 +399,7 @@ function App() {
             type="button"
             onClick={() => openView('home')}
           >
-            Archive
+            Home
           </button>
 
           <a href="#archive" onClick={goToPieces}>
