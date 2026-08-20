@@ -3,7 +3,7 @@ import './App.css'
 
 const product = {
   id: 'H-001',
-  name: 'GRUMPY VAMPIRE',
+  name: 'Grumpy Vampire',
   type: 'T-SHIRT',
   description: "It's just one of those days.",
 
@@ -32,6 +32,30 @@ const product = {
 
   sizes: ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'],
 }
+
+const catalogProducts = [
+  product,
+  {
+    id: 'H-002',
+    name: 'No Pictures Please',
+    type: 'T-SHIRT',
+    description: 'Please respect the archive.',
+    available: false,
+    colours: [
+      {
+        name: 'White',
+        key: 'white',
+        image: '/images/mockups/no-pics-pls_white-mockup.png',
+      },
+      {
+        name: 'Light Pink',
+        key: 'lightpink',
+        image: '/images/mockups/no-pics-pls_lightpink-mockup.png',
+      },
+    ],
+    sizes: ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'],
+  },
+]
 
 const getPrice = (size) =>
   ['3XL', '4XL', '5XL'].includes(size) ? 26.99 : 24.99
@@ -472,7 +496,7 @@ function App() {
                   <h2>SELECTED PIECES</h2>
                 </div>
 
-                <span>01 OBJECT</span>
+                <span>02 OBJECTS</span>
               </div>
 
               <div
@@ -481,42 +505,58 @@ function App() {
                 }`}
                 ref={gridRef}
               >
-                <button
-                  type="button"
-                  className="product product-card"
-                  onClick={openProduct}
-                >
-                  <div className="product-image">
-                    <img
-                      src={product.colours[0].image}
-                      alt={product.name}
-                    />
+                {catalogProducts.map((catalogProduct) => (
+                  <button
+                    key={catalogProduct.id}
+                    type="button"
+                    className={`product product-card ${
+                      catalogProduct.available === false
+                        ? 'is-unavailable'
+                        : ''
+                    }`}
+                    onClick={
+                      catalogProduct.available === false
+                        ? undefined
+                        : openProduct
+                    }
+                    disabled={catalogProduct.available === false}
+                  >
+                    <div className="product-image">
+                      <img
+                        src={catalogProduct.colours[0].image}
+                        alt={catalogProduct.name}
+                      />
 
-                    <span className="product-index">
-                      {product.id}
-                    </span>
+                      <span className="product-index">
+                        {catalogProduct.id}
+                      </span>
 
-                    <span className="view">
-                      VIEW →
-                    </span>
-                  </div>
-
-                  <div className="product-info">
-                    <div>
-                      <span>{product.id}</span>
-
-                      <h3>{product.name}</h3>
-
-                      <p className="product-type">
-                        {product.type}
-                      </p>
+                      <span className="view">
+                        {catalogProduct.available === false
+                          ? 'COMING SOON'
+                          : 'VIEW →'}
+                      </span>
                     </div>
 
-                    <span>
-                      FROM £24.99
-                    </span>
-                  </div>
-                </button>
+                    <div className="product-info">
+                      <div>
+                        <span>{catalogProduct.id}</span>
+
+                        <h3>{catalogProduct.name}</h3>
+
+                        <p className="product-type">
+                          {catalogProduct.type}
+                        </p>
+                      </div>
+
+                      <span>
+                        {catalogProduct.available === false
+                          ? 'NOT YET AVAILABLE'
+                          : 'FROM £24.99'}
+                      </span>
+                    </div>
+                  </button>
+                ))}
               </div>
             </section>
 
