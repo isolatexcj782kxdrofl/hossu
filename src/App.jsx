@@ -531,12 +531,6 @@ function App() {
                 CONTACT / 002
               </div>
 
-              <h2>
-                SAY
-                <br />
-                <span>HELLO.</span>
-              </h2>
-
               <a
                 href="mailto:hossuclothing@gmail.com"
                 className="email"
