@@ -6,6 +6,9 @@
   background: #0a0a0a;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-soft: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 * {
@@ -36,10 +39,40 @@ a {
   text-decoration: none;
 }
 
+:focus-visible {
+  outline: 1px solid #e8e6df;
+  outline-offset: 3px;
+}
+
 .site {
+  position: relative;
+
   min-height: 100vh;
   overflow-x: hidden;
   background: #0a0a0a;
+}
+
+/* faint film-grain layer, sits under everything, never blocks clicks */
+.site::before {
+  content: '';
+
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
+  animation: grainShift 9s steps(6) infinite;
+}
+
+main,
+.footer {
+  position: relative;
+  z-index: 2;
 }
 
 /* =========================
@@ -81,6 +114,16 @@ a {
   background: transparent;
 
   cursor: pointer;
+
+  transition: transform 0.4s var(--ease-out);
+}
+
+.logo:hover {
+  transform: rotate(-8deg) scale(1.08);
+}
+
+.logo:active {
+  transform: rotate(-8deg) scale(0.96);
 }
 
 .logo img {
@@ -112,7 +155,33 @@ a {
 
   cursor: pointer;
 
-  transition: color 0.2s ease;
+  transition: color 0.25s var(--ease-out);
+}
+
+.nav button,
+.nav a {
+  position: relative;
+}
+
+.nav button::after,
+.nav a::after {
+  content: '';
+
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: -5px;
+
+  height: 1px;
+
+  background: currentColor;
+
+  transition: right 0.4s var(--ease-out);
+}
+
+.nav button:hover::after,
+.nav a:hover::after {
+  right: 0;
 }
 
 .nav button:hover,
@@ -123,6 +192,11 @@ a {
 
 .bag {
   justify-self: end;
+  transform: scale(1);
+}
+
+.bag.bump {
+  animation: bagBump 0.5s var(--ease-out);
 }
 
 /* =========================
@@ -153,6 +227,8 @@ a {
   font-size: 0.58rem;
 
   letter-spacing: 0.08em;
+
+  animation: fadeUp 0.8s var(--ease-out) both;
 }
 
 .hero-title {
@@ -163,6 +239,8 @@ a {
   justify-content: center;
 
   padding: 30px 0;
+
+  animation: fadeUp 0.9s var(--ease-out) 0.12s both;
 }
 
 /* BIGGER HOSSU LOGO */
@@ -178,6 +256,8 @@ a {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: end;
+
+  animation: fadeUp 0.9s var(--ease-out) 0.22s both;
 }
 
 .hero-bottom p {
@@ -209,13 +289,18 @@ a {
   letter-spacing: 0.08em;
 
   transition:
-    color 0.2s ease,
-    background 0.2s ease,
-    border-color 0.2s ease;
+    color 0.3s var(--ease-out),
+    background 0.3s var(--ease-out),
+    border-color 0.3s var(--ease-out),
+    transform 0.2s var(--ease-out);
 }
 
 .enter span {
+  display: inline-block;
+
   margin-left: 20px;
+
+  transition: transform 0.3s var(--ease-out);
 }
 
 .enter:hover {
@@ -224,12 +309,38 @@ a {
   border-color: #e8e6df;
 }
 
+.enter:hover span {
+  transform: translateY(3px);
+}
+
+.enter:active {
+  transform: scale(0.97);
+}
+
 /* =========================
    ARCHIVE
 ========================= */
 
 .archive {
   padding: 110px 42px 130px;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+
+  transition:
+    opacity 0.9s var(--ease-out),
+    transform 0.9s var(--ease-out);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay.is-visible {
+  transition-delay: 0.1s;
 }
 
 .archive-header {
@@ -293,6 +404,12 @@ a {
   overflow: hidden;
 
   background: #111;
+
+  transition: box-shadow 0.5s var(--ease-out);
+}
+
+.product-card:hover .product-image {
+  box-shadow: 0 0 0 1px #3a3a3a;
 }
 
 .product-image img {
@@ -303,11 +420,34 @@ a {
 
   object-fit: cover;
 
-  transition: transform 0.5s ease;
+  transition:
+    transform 0.7s var(--ease-out),
+    filter 0.5s ease;
 }
 
 .product-card:hover .product-image img {
-  transform: scale(1.025);
+  transform: scale(1.045);
+  filter: brightness(0.9);
+}
+
+.product-image::after {
+  content: '';
+
+  position: absolute;
+  inset: auto 0 0 0;
+
+  height: 45%;
+
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent);
+
+  opacity: 0;
+
+  transition: opacity 0.5s var(--ease-out);
+  pointer-events: none;
+}
+
+.product-card:hover .product-image::after {
+  opacity: 1;
 }
 
 .product-index {
@@ -338,12 +478,16 @@ a {
   letter-spacing: 0.08em;
 
   opacity: 0;
+  transform: translateY(8px);
 
-  transition: opacity 0.2s ease;
+  transition:
+    opacity 0.4s var(--ease-out),
+    transform 0.4s var(--ease-out);
 }
 
 .product-card:hover .view {
   opacity: 1;
+  transform: translateY(0);
 }
 
 .product-info {
@@ -373,6 +517,12 @@ a {
 
   font-weight: 500;
   letter-spacing: -0.02em;
+
+  transition: color 0.4s var(--ease-out);
+}
+
+.product-card:hover .product-info h3 {
+  color: #fff;
 }
 
 .product-type {
@@ -422,13 +572,13 @@ a {
 }
 
 .email {
+  position: relative;
+
   width: fit-content;
 
   margin-top: 60px;
 
   padding-bottom: 7px;
-
-  border-bottom: 1px solid #555;
 
   color: #c5c4be;
 
@@ -437,11 +587,43 @@ a {
 
   letter-spacing: 0.08em;
 
-  transition: color 0.2s ease;
+  transition: color 0.3s var(--ease-out);
+}
+
+.email::after {
+  content: '';
+
+  position: absolute;
+  left: 0;
+  bottom: 0;
+
+  width: 100%;
+  height: 1px;
+
+  background: #555;
+}
+
+.email::before {
+  content: '';
+
+  position: absolute;
+  left: 0;
+  bottom: 0;
+
+  width: 0%;
+  height: 1px;
+
+  background: #fff;
+
+  transition: width 0.45s var(--ease-out);
 }
 
 .email:hover {
   color: #fff;
+}
+
+.email:hover::before {
+  width: 100%;
 }
 
 /* =========================
@@ -452,6 +634,8 @@ a {
   min-height: 100vh;
 
   padding: 120px 42px 100px;
+
+  animation: pageIn 0.6s var(--ease-out) both;
 }
 
 .back-button {
@@ -469,7 +653,7 @@ a {
 
   cursor: pointer;
 
-  transition: color 0.2s ease;
+  transition: color 0.25s var(--ease-out);
 }
 
 .back-button:hover {
@@ -647,13 +831,18 @@ a {
   cursor: pointer;
 
   transition:
-    border-color 0.2s ease,
-    color 0.2s ease;
+    border-color 0.25s var(--ease-out),
+    color 0.25s var(--ease-out),
+    transform 0.15s var(--ease-out);
 }
 
 .colour-button:hover {
   border-color: #555;
   color: #ddd;
+}
+
+.colour-button:active {
+  transform: scale(0.97);
 }
 
 .colour-button.selected {
@@ -668,6 +857,12 @@ a {
   display: block;
 
   border: 1px solid #444;
+
+  transition: transform 0.25s var(--ease-out);
+}
+
+.colour-button:hover .colour-swatch {
+  transform: scale(1.12);
 }
 
 .colour-swatch.white {
@@ -708,14 +903,19 @@ a {
   cursor: pointer;
 
   transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease;
+    background 0.25s var(--ease-out),
+    color 0.25s var(--ease-out),
+    border-color 0.25s var(--ease-out),
+    transform 0.15s var(--ease-out);
 }
 
 .size-button:hover {
   border-color: #555;
   color: #ddd;
+}
+
+.size-button:active {
+  transform: scale(0.94);
 }
 
 .size-button.selected {
@@ -753,12 +953,27 @@ a {
   cursor: pointer;
 
   transition:
-    background 0.2s ease,
-    color 0.2s ease;
+    background 0.25s var(--ease-out),
+    color 0.25s var(--ease-out),
+    transform 0.15s var(--ease-out);
+}
+
+.add-button span:last-child {
+  display: inline-block;
+
+  transition: transform 0.3s var(--ease-out);
 }
 
 .add-button:hover {
   background: #fff;
+}
+
+.add-button:hover span:last-child {
+  transform: translateX(4px);
+}
+
+.add-button:active {
+  transform: scale(0.985);
 }
 
 /* =========================
@@ -771,6 +986,8 @@ a {
   padding-top: 16px;
 
   border-top: 1px solid #292929;
+
+  animation: fadeUp 0.5s var(--ease-out) both;
 }
 
 .after-add-message {
@@ -791,8 +1008,12 @@ a {
   letter-spacing: 0.08em;
 }
 
-.after-add-message span {
+.after-add-message span:first-child {
+  display: inline-flex;
+
   color: #aaa;
+
+  animation: popIn 0.45s var(--ease-out);
 }
 
 .proceed-button {
@@ -821,9 +1042,16 @@ a {
   cursor: pointer;
 
   transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease;
+    background 0.25s var(--ease-out),
+    color 0.25s var(--ease-out),
+    border-color 0.25s var(--ease-out),
+    transform 0.15s var(--ease-out);
+}
+
+.proceed-button span:last-child {
+  display: inline-block;
+
+  transition: transform 0.3s var(--ease-out);
 }
 
 .proceed-button:hover {
@@ -834,6 +1062,14 @@ a {
   color: #0a0a0a;
 }
 
+.proceed-button:hover span:last-child {
+  transform: translateX(4px);
+}
+
+.proceed-button:active {
+  transform: scale(0.985);
+}
+
 /* =========================
    BAG
 ========================= */
@@ -842,6 +1078,8 @@ a {
   min-height: 100vh;
 
   padding: 125px 42px 100px;
+
+  animation: pageIn 0.6s var(--ease-out) both;
 }
 
 .bag-page-header {
@@ -900,6 +1138,8 @@ a {
   margin-bottom: 25px;
 
   border-bottom: 1px solid #292929;
+
+  animation: fadeUp 0.5s var(--ease-out) both;
 }
 
 .bag-item-image {
@@ -919,6 +1159,12 @@ a {
   display: block;
 
   object-fit: cover;
+
+  transition: transform 0.6s var(--ease-out);
+}
+
+.bag-item:hover .bag-item-image img {
+  transform: scale(1.04);
 }
 
 .bag-item-info {
@@ -968,6 +1214,20 @@ a {
   color: #aaa;
 
   cursor: pointer;
+
+  transition:
+    border-color 0.2s var(--ease-out),
+    color 0.2s var(--ease-out),
+    transform 0.15s var(--ease-out);
+}
+
+.quantity button:hover {
+  border-color: #777;
+  color: #fff;
+}
+
+.quantity button:active {
+  transform: scale(0.9);
 }
 
 .quantity span {
@@ -1029,6 +1289,21 @@ a {
   color: #ddd;
 }
 
+.checkout-error {
+  margin: 0 0 14px;
+
+  color: #d98a7c;
+
+  font-family: 'DM Mono', monospace;
+  font-size: 0.52rem;
+
+  line-height: 1.6;
+
+  letter-spacing: 0.04em;
+
+  animation: fadeUp 0.35s var(--ease-out) both;
+}
+
 .checkout-button {
   width: 100%;
 
@@ -1048,10 +1323,23 @@ a {
   letter-spacing: 0.08em;
 
   cursor: pointer;
+
+  transition:
+    background 0.25s var(--ease-out),
+    transform 0.15s var(--ease-out);
 }
 
 .checkout-button:hover {
   background: #fff;
+}
+
+.checkout-button:active {
+  transform: scale(0.985);
+}
+
+.checkout-button.is-loading {
+  cursor: default;
+  animation: pulseSoft 1.3s ease-in-out infinite;
 }
 
 .continue-shopping {
@@ -1073,6 +1361,8 @@ a {
   letter-spacing: 0.07em;
 
   cursor: pointer;
+
+  transition: color 0.25s var(--ease-out);
 }
 
 .continue-shopping:hover {
@@ -1093,6 +1383,8 @@ a {
   justify-content: center;
 
   gap: 25px;
+
+  animation: fadeUp 0.6s var(--ease-out) both;
 }
 
 .empty-bag p {
@@ -1121,11 +1413,20 @@ a {
   letter-spacing: 0.07em;
 
   cursor: pointer;
+
+  transition:
+    border-color 0.25s var(--ease-out),
+    color 0.25s var(--ease-out),
+    transform 0.15s var(--ease-out);
 }
 
 .empty-bag button:hover {
   border-color: #777;
   color: #fff;
+}
+
+.empty-bag button:active {
+  transform: scale(0.97);
 }
 
 /* =========================
@@ -1146,6 +1447,98 @@ a {
   font-size: 0.5rem;
 
   letter-spacing: 0.07em;
+}
+
+/* =========================
+   KEYFRAMES
+========================= */
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  60% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes bagBump {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  35% {
+    transform: scale(1.18);
+  }
+}
+
+@keyframes pulseSoft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes grainShift {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  20% {
+    transform: translate(-2%, -1%);
+  }
+
+  40% {
+    transform: translate(1%, 2%);
+  }
+
+  60% {
+    transform: translate(-1%, 1%);
+  }
+
+  80% {
+    transform: translate(2%, -2%);
+  }
+
+  100% {
+    transform: translate(0, 0);
+  }
 }
 
 /* =========================
@@ -1344,5 +1737,25 @@ a {
 
   .proceed-button {
     font-size: 0.52rem;
+  }
+}
+
+/* =========================
+   REDUCED MOTION
+========================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
   }
 }

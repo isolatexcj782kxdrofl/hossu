@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
 
 const product = {
@@ -36,6 +36,43 @@ const product = {
 const getPrice = (size) =>
   ['3XL', '4XL', '5XL'].includes(size) ? 26.99 : 24.99
 
+// Triggers once, the first time the element scrolls into view — used to
+// bring the archive and contact sections in gently instead of them just
+// snapping into place.
+function useReveal() {
+  const ref = useRef(null)
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const node = ref.current
+
+    if (!node) {
+      return undefined
+    }
+
+    if (typeof IntersectionObserver === 'undefined') {
+      setVisible(true)
+      return undefined
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true)
+          observer.unobserve(node)
+        }
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -60px 0px' },
+    )
+
+    observer.observe(node)
+
+    return () => observer.disconnect()
+  }, [])
+
+  return [ref, visible]
+}
+
 function App() {
   const [view, setView] = useState('home')
   const [selectedColour, setSelectedColour] = useState(
@@ -65,6 +102,11 @@ function App() {
     useState(false)
   const [checkoutError, setCheckoutError] =
     useState('')
+  const [bagBump, setBagBump] = useState(false)
+
+  const [archiveRef, archiveVisible] = useReveal()
+  const [gridRef, gridVisible] = useReveal()
+  const [contactRef, contactVisible] = useReveal()
 
   // Save the bag whenever it changes.
   useEffect(() => {
@@ -136,6 +178,11 @@ function App() {
 
     setMessage('ADDED TO BAG')
     setAddedToBag(true)
+
+    setBagBump(true)
+    setTimeout(() => {
+      setBagBump(false)
+    }, 500)
 
     setTimeout(() => {
       setMessage('')
@@ -247,7 +294,7 @@ function App() {
         </nav>
 
         <button
-          className="bag"
+          className={`bag ${bagBump ? 'bump' : ''}`}
           type="button"
           onClick={() => openView('bag')}
         >
@@ -297,15 +344,25 @@ function App() {
               className="archive"
               id="archive"
             >
-            <div className="archive-header">
-              <div>
-                <h2>SELECTED PIECES</h2>
+              <div
+                className={`archive-header reveal ${
+                  archiveVisible ? 'is-visible' : ''
+                }`}
+                ref={archiveRef}
+              >
+                <div>
+                  <h2>SELECTED PIECES</h2>
+                </div>
+
+                <span>01 OBJECT</span>
               </div>
 
-              <span>01 OBJECT</span>
-            </div>
-
-              <div className="product-grid">
+              <div
+                className={`product-grid reveal reveal-delay ${
+                  gridVisible ? 'is-visible' : ''
+                }`}
+                ref={gridRef}
+              >
                 <button
                   type="button"
                   className="product product-card"
@@ -346,8 +403,11 @@ function App() {
             </section>
 
             <section
-              className="contact"
+              className={`contact reveal ${
+                contactVisible ? 'is-visible' : ''
+              }`}
               id="contact"
+              ref={contactRef}
             >
               <div className="contact-label">
                 CONTACT / 002
@@ -574,6 +634,9 @@ function App() {
                     <div
                       className="bag-item"
                       key={`${item.productId}-${item.colour.key}-${item.size}`}
+                      style={{
+                        animationDelay: `${index * 0.06}s`,
+                      }}
                     >
                       <div className="bag-item-image">
                         <img
@@ -671,7 +734,9 @@ function App() {
 
                   <button
                     type="button"
-                    className="checkout-button"
+                    className={`checkout-button ${
+                      checkoutLoading ? 'is-loading' : ''
+                    }`}
                     onClick={checkout}
                     disabled={checkoutLoading}
                   >
