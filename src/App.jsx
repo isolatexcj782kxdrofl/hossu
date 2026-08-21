@@ -40,7 +40,7 @@ const catalogProducts = [
     name: 'No Pictures Please',
     type: 'T-SHIRT',
     description: 'Please respect the archive.',
-    available: false,
+    available: true,
     colours: [
       {
         name: 'White',
@@ -144,6 +144,8 @@ function App() {
   const [selectedColour, setSelectedColour] = useState(
     product.colours[0],
   )
+  const [selectedProduct, setSelectedProduct] =
+    useState(product)
   const [selectedSize, setSelectedSize] = useState('')
   const [bag, setBag] = useState(() => {
     try {
@@ -271,10 +273,11 @@ function App() {
     })
   }
 
-  const openProduct = () => {
+  const openProduct = (nextProduct = product) => {
     setAddedToBag(false)
     setSelectedSize('')
-    setSelectedColour(product.colours[0])
+    setSelectedProduct(nextProduct)
+    setSelectedColour(nextProduct.colours[0])
     openView('product')
   }
 
@@ -286,7 +289,7 @@ function App() {
 
     const existingItem = bag.find(
       (item) =>
-        item.productId === product.id &&
+        item.productId === selectedProduct.id &&
         item.colour.key === selectedColour.key &&
         item.size === selectedSize,
     )
@@ -294,7 +297,7 @@ function App() {
     if (existingItem) {
       setBag(
         bag.map((item) =>
-          item.productId === product.id &&
+          item.productId === selectedProduct.id &&
           item.colour.key === selectedColour.key &&
           item.size === selectedSize
             ? {
@@ -308,8 +311,8 @@ function App() {
       setBag([
         ...bag,
         {
-          productId: product.id,
-          name: product.name,
+          productId: selectedProduct.id,
+          name: selectedProduct.name,
           price: getPrice(selectedSize),
           colour: selectedColour,
           size: selectedSize,
@@ -527,7 +530,7 @@ function App() {
                     onClick={
                       catalogProduct.available === false
                         ? undefined
-                        : openProduct
+                        : () => openProduct(catalogProduct)
                     }
                     disabled={catalogProduct.available === false}
                   >
@@ -605,24 +608,24 @@ function App() {
               <div className="product-page-image">
                 <img
                   src={selectedColour.image}
-                  alt={`${product.name} - ${selectedColour.name}`}
+                  alt={`${selectedProduct.name} - ${selectedColour.name}`}
                 />
 
                 <span className="product-page-index">
-                  {product.id}
+                  {selectedProduct.id}
                 </span>
               </div>
 
               <div className="product-page-info">
                 <div className="product-page-heading">
                   <span className="label">
-                    {product.id}
+                    {selectedProduct.id}
                   </span>
 
-                  <h1>{product.name}</h1>
+                  <h1>{selectedProduct.name}</h1>
 
                   <p className="product-page-type">
-                    {product.type}
+                    {selectedProduct.type}
                   </p>
 
                   <p className="product-page-price">
@@ -634,7 +637,7 @@ function App() {
                 </div>
 
                 <p className="description">
-                  {product.description}
+                  {selectedProduct.description}
                 </p>
 
                 <div className="option-group">
@@ -647,7 +650,7 @@ function App() {
                   </div>
 
                   <div className="colour-options">
-                    {product.colours.map(
+                    {selectedProduct.colours.map(
                       (colour) => (
                         <button
                           key={colour.key}
@@ -689,7 +692,7 @@ function App() {
                   </div>
 
                   <div className="size-options">
-                    {product.sizes.map(
+                    {selectedProduct.sizes.map(
                       (size) => (
                         <button
                           key={size}

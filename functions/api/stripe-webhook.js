@@ -1,6 +1,8 @@
 const PRINTIFY_SHOP_ID = '28638401'
-const PRINTIFY_PRODUCT_ID =
-  '6a85cbe6745617b4590506f5'
+const PRINTIFY_PRODUCT_IDS = new Set([
+  '6a85cbe6745617b4590506f5',
+  '6a87432dbf90413b190ff870',
+])
 
 export async function onRequestPost(context) {
   try {
@@ -107,8 +109,7 @@ export async function onRequestPost(context) {
 
     for (const item of items) {
       if (
-        item.productId !==
-        PRINTIFY_PRODUCT_ID
+        !PRINTIFY_PRODUCT_IDS.has(item.productId)
       ) {
         return new Response(
           'Invalid Printify product.',

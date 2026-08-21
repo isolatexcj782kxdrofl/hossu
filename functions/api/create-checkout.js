@@ -1,6 +1,10 @@
-const PRODUCT_ID = '6a85cbe6745617b4590506f5'
+const PRODUCTS = {
+  'H-001': {
+    printifyProductId: '6a85cbe6745617b4590506f5',
+    name: 'Grumpy Vampire',
+    imagePrefix: 'grumpy-vampire',
+    variants: {
 
-const VARIANTS = {
   white: {
     S: 12102,
     M: 12101,
@@ -10,9 +14,9 @@ const VARIANTS = {
     '3XL': 12105,
     '4XL': 24031,
     '5XL': 24164,
-  },
+      },
 
-  sportgrey: {
+      sportgrey: {
     S: 12072,
     M: 12071,
     L: 12070,
@@ -21,9 +25,9 @@ const VARIANTS = {
     '3XL': 12075,
     '4XL': 24021,
     '5XL': 24153,
-  },
+      },
 
-  militarygreen: {
+      militarygreen: {
     S: 12192,
     M: 12191,
     L: 12190,
@@ -32,9 +36,9 @@ const VARIANTS = {
     '3XL': 12195,
     '4XL': 24060,
     '5XL': 24194,
-  },
+      },
 
-  lightpink: {
+      lightpink: {
     S: 11964,
     M: 11963,
     L: 11962,
@@ -43,6 +47,35 @@ const VARIANTS = {
     '3XL': 11967,
     '4XL': 23985,
     '5XL': 24118,
+      },
+    },
+  },
+  'H-002': {
+    printifyProductId: '6a87432dbf90413b190ff870',
+    name: 'No Pictures Please',
+    imagePrefix: 'no-pics-pls',
+    variants: {
+      white: {
+        S: 12102,
+        M: 12101,
+        L: 12100,
+        XL: 12103,
+        '2XL': 12104,
+        '3XL': 12105,
+        '4XL': 24031,
+        '5XL': 24164,
+      },
+      lightpink: {
+        S: 11964,
+        M: 11963,
+        L: 11962,
+        XL: 11965,
+        '2XL': 11966,
+        '3XL': 11967,
+        '4XL': 23985,
+        '5XL': 24118,
+      },
+    },
   },
 }
 
@@ -109,11 +142,13 @@ export async function onRequestPost(context) {
     )
 
     items.forEach((item, index) => {
-      if (item.productId !== 'H-001') {
+      const selectedProduct = PRODUCTS[item.productId]
+
+      if (!selectedProduct) {
         throw new Error('Invalid product.')
       }
 
-      if (!VARIANTS[item.color]) {
+      if (!selectedProduct.variants[item.color]) {
         throw new Error('Invalid colour.')
       }
 
@@ -121,7 +156,8 @@ export async function onRequestPost(context) {
         throw new Error('Invalid size.')
       }
 
-      const variantId = VARIANTS[item.color][item.size]
+      const variantId =
+        selectedProduct.variants[item.color][item.size]
 
       if (!variantId) {
         throw new Error('That colour/size combination is unavailable.')
@@ -144,7 +180,7 @@ export async function onRequestPost(context) {
       const colorName = COLOR_NAMES[item.color]
 
       const imageUrl =
-        `${origin}/images/mockups/grumpy-vampire_${item.color}.jpg`
+        `${origin}/images/mockups/${selectedProduct.imagePrefix}_${item.color}${selectedProduct.imagePrefix === 'no-pics-pls' ? '-mockup.png' : '.jpg'}`
 
       form.append(
         `line_items[${index}][price_data][currency]`,
@@ -158,7 +194,7 @@ export async function onRequestPost(context) {
 
       form.append(
         `line_items[${index}][price_data][product_data][name]`,
-        'Grumpy Vampire',
+        selectedProduct.name,
       )
 
       form.append(
@@ -190,8 +226,9 @@ export async function onRequestPost(context) {
      * variant was purchased after Stripe confirms payment.
      */
     const orderItems = items.map((item) => ({
-      productId: PRODUCT_ID,
-      variantId: VARIANTS[item.color][item.size],
+      productId: PRODUCTS[item.productId].printifyProductId,
+      variantId:
+        PRODUCTS[item.productId].variants[item.color][item.size],
       color: item.color,
       size: item.size,
       quantity: Math.max(
