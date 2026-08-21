@@ -398,6 +398,7 @@ main,
 .product-grid {
   display: grid;
   grid-template-columns: minmax(0, 620px);
+  justify-content: center;
   gap: 24px;
 }
 
