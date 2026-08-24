@@ -60,8 +60,6 @@ const catalogProducts = [
 const getPrice = (size) =>
   ['3XL', '4XL', '5XL'].includes(size) ? 26.99 : 24.99
 
-const NEWSLETTER_JOINED_KEY =
-  'hossu-newsletter-joined'
 
 const preventImageInteraction = (event) => {
   if (event.target?.tagName === 'IMG') {
@@ -93,8 +91,11 @@ function useReveal() {
     }
 
     if (typeof IntersectionObserver === 'undefined') {
-      setVisible(true)
-      return undefined
+      const timer = setTimeout(() => {
+        setVisible(true)
+      }, 0)
+
+      return () => clearTimeout(timer)
     }
 
     if (visible) {
@@ -151,6 +152,10 @@ function App() {
     useState(product)
   const [selectedSize, setSelectedSize] = useState('')
   const [bag, setBag] = useState(() => {
+    if (initialCheckout.status === 'success') {
+      return []
+    }
+
     try {
       const savedBag = localStorage.getItem('hossu-bag')
 
@@ -216,10 +221,6 @@ function App() {
       return
     }
 
-    if (initialCheckout.status === 'success') {
-      setBag([])
-    }
-
     window.history.replaceState(
       {},
       '',
@@ -254,8 +255,6 @@ function App() {
         .finally(() => {
           setOrderLoading(false)
         })
-    } else {
-      setOrderLoading(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -293,14 +292,6 @@ function App() {
         )
       }
 
-      try {
-        localStorage.setItem(
-          NEWSLETTER_JOINED_KEY,
-          'true',
-        )
-      } catch {
-        // Signup succeeded even if storage is unavailable.
-      }
       setNewsletterStatus('success')
     } catch (error) {
       setNewsletterStatus('error')

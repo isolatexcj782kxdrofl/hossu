@@ -565,8 +565,8 @@ main,
 }
 
 .contact-combined {
-  color: #0a0a0a;
-  background: #b7c46a;
+  color: #e8e6df;
+  background: #0a0a0a;
 }
 
 .contact-label {
@@ -670,7 +670,7 @@ main,
 
 .newsletter-content .label,
 .contact-combined .contact-label {
-  color: #373d13;
+  color: #686865;
 }
 
 .newsletter-form {
@@ -685,6 +685,11 @@ main,
   font-size: clamp(1.65rem, 4vw, 2.35rem);
   font-weight: 500;
   line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.contact-combined .newsletter-content h2 {
+  font-size: clamp(1.65rem, 4vw, 2.35rem);
   letter-spacing: -0.04em;
 }
 
@@ -707,7 +712,7 @@ main,
 
 .newsletter-input-row {
   display: flex;
-  border-bottom: 1px solid #0a0a0a;
+  border-bottom: 1px solid #555;
 }
 
 .newsletter-input-row input {
@@ -727,7 +732,7 @@ main,
 }
 
 .newsletter-input-row input::placeholder {
-  color: #59621d;
+  color: #686865;
 }
 
 .newsletter-input-row button {
@@ -755,7 +760,7 @@ main,
 
   margin-top: 14px;
 
-  color: #59621d;
+  color: #686865;
   font-family: 'DM Mono', monospace;
   font-size: 0.5rem;
   line-height: 1.5;
@@ -809,7 +814,7 @@ main,
 }
 
 .contact-combined .email {
-  color: #0a0a0a;
+  color: #c5c4be;
 }
 
 /* =========================
@@ -2000,6 +2005,11 @@ main,
 
   .contact {
     min-height: 0;
+  }
+
+  .contact-combined .newsletter-content h2 {
+    max-width: 300px;
+    font-size: 1.65rem;
   }
 
   .contact h2 {
