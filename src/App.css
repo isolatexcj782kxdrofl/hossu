@@ -661,7 +661,7 @@ main,
   padding: 30px;
 
   color: #0a0a0a;
-  background: #d8ff3e;
+  background: #b7c46a;
 
   box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.35);
   animation: newsletterIn 0.7s var(--ease-out) both;
@@ -773,6 +773,19 @@ main,
 
 .newsletter-success p {
   max-width: 300px;
+
+  margin-right: auto;
+  margin-left: auto;
+  text-align: center;
+}
+
+.newsletter-success {
+  text-align: center;
+}
+
+.newsletter-success h2 {
+  margin-right: auto;
+  margin-left: auto;
 }
 
 /* =========================
