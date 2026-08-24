@@ -12,7 +12,7 @@ export async function onRequestPost(context) {
       return json({ error: 'Enter a valid email address.' }, 400)
     }
 
-    if (!context.env.MAILERLITE_API_TOKEN) {
+    if (!context.env.MAILERLITE_TOKEN) {
       console.error('Missing MailerLite API token.')
       return json({ error: 'Signup is temporarily unavailable.' }, 500)
     }
@@ -23,7 +23,7 @@ export async function onRequestPost(context) {
         method: 'POST',
         headers: {
           Authorization:
-            `Bearer ${context.env.MAILERLITE_API_TOKEN}`,
+            `Bearer ${context.env.MAILERLITE_TOKEN}`,
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
