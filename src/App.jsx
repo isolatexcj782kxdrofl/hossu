@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import './App.css'
 
 const product = {
@@ -59,6 +59,12 @@ const catalogProducts = [
 
 const getPrice = (size) =>
   ['3XL', '4XL', '5XL'].includes(size) ? 26.99 : 24.99
+
+const NEWSLETTER_DISMISSAL_KEY =
+  'hossu-newsletter-dismissed-until'
+const NEWSLETTER_JOINED_KEY =
+  'hossu-newsletter-joined'
+const ONE_WEEK = 7 * 24 * 60 * 60 * 1000
 
 const preventImageInteraction = (event) => {
   if (event.target?.tagName === 'IMG') {
@@ -134,7 +140,7 @@ function getCheckoutParams() {
 }
 
 function App() {
-  const initialCheckout = useRef(getCheckoutParams()).current
+  const initialCheckout = getCheckoutParams()
 
   const [view, setView] = useState(() => {
     if (initialCheckout.status === 'success') return 'order-success'
@@ -179,10 +185,47 @@ function App() {
   const [orderLoading, setOrderLoading] = useState(
     Boolean(initialCheckout.sessionId),
   )
+  const [newsletterOpen, setNewsletterOpen] =
+    useState(false)
+  const [newsletterEmail, setNewsletterEmail] =
+    useState('')
+  const [newsletterStatus, setNewsletterStatus] =
+    useState('idle')
+  const [newsletterError, setNewsletterError] =
+    useState('')
 
   const [archiveRef, archiveVisible] = useReveal()
   const [gridRef, gridVisible] = useReveal()
   const [contactRef, contactVisible] = useReveal()
+
+  useEffect(() => {
+    if (initialCheckout.status) {
+      return undefined
+    }
+
+    try {
+      const dismissedUntil = Number(
+        localStorage.getItem(
+          NEWSLETTER_DISMISSAL_KEY,
+        ),
+      )
+      const alreadyJoined = localStorage.getItem(
+        NEWSLETTER_JOINED_KEY,
+      )
+
+      if (alreadyJoined || dismissedUntil > Date.now()) {
+        return undefined
+      }
+    } catch {
+      // The popup can still work if storage is unavailable.
+    }
+
+    const timer = setTimeout(() => {
+      setNewsletterOpen(true)
+    }, 2500)
+
+    return () => clearTimeout(timer)
+  }, [initialCheckout.status])
 
   // Save the bag whenever it changes.
   useEffect(() => {
@@ -256,6 +299,63 @@ function App() {
     setMessage('')
     setCheckoutError('')
     window.scrollTo(0, 0)
+  }
+
+  const closeNewsletter = () => {
+    try {
+      localStorage.setItem(
+        NEWSLETTER_DISMISSAL_KEY,
+        String(Date.now() + ONE_WEEK),
+      )
+    } catch {
+      // Closing still works if storage is unavailable.
+    }
+
+    setNewsletterOpen(false)
+  }
+
+  const joinNewsletter = async (event) => {
+    event.preventDefault()
+    setNewsletterStatus('submitting')
+    setNewsletterError('')
+
+    try {
+      const response = await fetch(
+        '/api/newsletter-signup',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: newsletterEmail,
+          }),
+        },
+      )
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || 'Unable to join updates.',
+        )
+      }
+
+      try {
+        localStorage.setItem(
+          NEWSLETTER_JOINED_KEY,
+          'true',
+        )
+      } catch {
+        // Signup succeeded even if storage is unavailable.
+      }
+      setNewsletterStatus('success')
+    } catch (error) {
+      setNewsletterStatus('error')
+      setNewsletterError(
+        error.message ||
+          'Unable to join updates. Please try again.',
+      )
+    }
   }
 
   const goToPieces = (event) => {
@@ -1056,6 +1156,75 @@ function App() {
         <span>ALL RIGHTS RESERVED</span>
         <span>HSS_ARCHIVE_001</span>
       </footer>
+
+      {newsletterOpen && (
+        <aside
+          className="newsletter-popup"
+          aria-label="Join Hossu updates"
+        >
+          <button
+            type="button"
+            className="newsletter-close"
+            onClick={closeNewsletter}
+            aria-label="Close newsletter signup"
+          >
+            ×
+          </button>
+
+          {newsletterStatus === 'success' ? (
+            <div className="newsletter-success">
+              <span className="label">YOU'RE IN</span>
+              <h2>THANK YOU.</h2>
+              <p>
+                Check your inbox for a confirmation from
+                Hossu.
+              </p>
+            </div>
+          ) : (
+            <form
+              className="newsletter-form"
+              onSubmit={joinNewsletter}
+            >
+              <span className="label">JOIN US</span>
+              <h2>EXCLUSIVE OFFERS<br />AND THE LATEST NEWS.</h2>
+              <p>Stay close to the archive.</p>
+
+              <div className="newsletter-input-row">
+                <input
+                  type="email"
+                  value={newsletterEmail}
+                  onChange={(event) =>
+                    setNewsletterEmail(event.target.value)
+                  }
+                  placeholder="YOUR EMAIL"
+                  aria-label="Email address"
+                  autoComplete="email"
+                  required
+                  disabled={newsletterStatus === 'submitting'}
+                />
+                <button
+                  type="submit"
+                  disabled={newsletterStatus === 'submitting'}
+                >
+                  {newsletterStatus === 'submitting'
+                    ? '...'
+                    : 'JOIN →'}
+                </button>
+              </div>
+
+              <small>
+                By joining, you agree to receive Hossu updates.
+              </small>
+
+              {newsletterStatus === 'error' && (
+                <p className="newsletter-error">
+                  {newsletterError}
+                </p>
+              )}
+            </form>
+          )}
+        </aside>
+      )}
     </div>
   )
 }
