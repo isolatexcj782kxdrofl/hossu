@@ -650,43 +650,23 @@ main,
    NEWSLETTER POPUP
 ========================= */
 
-.newsletter-popup {
-  position: fixed;
-  z-index: 120;
-  top: 88px;
-  right: 24px;
+.newsletter-section {
+  width: 100%;
+  min-height: 48vh;
 
-  width: min(440px, calc(100vw - 48px));
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  padding: 30px;
+  padding: 90px 42px;
 
   color: #0a0a0a;
   background: #b7c46a;
 
-  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.35);
-  animation: newsletterIn 0.7s var(--ease-out) both;
+  border-top: 1px solid #202020;
 }
 
-.newsletter-close {
-  position: absolute;
-  top: 12px;
-  right: 14px;
-
-  width: 28px;
-  height: 28px;
-
-  padding: 0;
-
-  border: 0;
-  background: transparent;
-
-  color: inherit;
-  font-size: 1.5rem;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.newsletter-popup .label {
+.newsletter-section .label {
   color: #373d13;
 }
 
@@ -694,7 +674,7 @@ main,
   text-align: center;
 }
 
-.newsletter-popup h2 {
+.newsletter-section h2 {
   max-width: 350px;
 
   margin: 28px 0 12px;
@@ -710,7 +690,7 @@ main,
   margin-left: auto;
 }
 
-.newsletter-popup p {
+.newsletter-section p {
   margin: 0 0 22px;
 
   font-family: 'DM Mono', monospace;
@@ -767,7 +747,7 @@ main,
   opacity: 0.55;
 }
 
-.newsletter-popup small {
+.newsletter-section small {
   display: block;
 
   margin-top: 14px;
@@ -1862,18 +1842,6 @@ main,
   }
 }
 
-@keyframes newsletterIn {
-  from {
-    opacity: 0;
-    transform: translateY(-18px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @keyframes grainShift {
   0% {
     transform: translate(0, 0);
@@ -1945,13 +1913,10 @@ main,
     padding: 0 18px;
   }
 
-  .newsletter-popup {
-    top: 76px;
-    right: 16px;
+  .newsletter-section {
+    min-height: 55vh;
 
-    width: calc(100vw - 32px);
-
-    padding: 25px 20px 22px;
+    padding: 75px 20px;
   }
 
   .nav {
