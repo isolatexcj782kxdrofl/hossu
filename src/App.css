@@ -690,6 +690,10 @@ main,
   color: #373d13;
 }
 
+.newsletter-form {
+  text-align: center;
+}
+
 .newsletter-popup h2 {
   max-width: 350px;
 
@@ -701,12 +705,21 @@ main,
   letter-spacing: -0.04em;
 }
 
+.newsletter-form h2 {
+  margin-right: auto;
+  margin-left: auto;
+}
+
 .newsletter-popup p {
   margin: 0 0 22px;
 
   font-family: 'DM Mono', monospace;
   font-size: 0.7rem;
   letter-spacing: 0.04em;
+}
+
+.newsletter-form p {
+  text-align: center;
 }
 
 .newsletter-input-row {
