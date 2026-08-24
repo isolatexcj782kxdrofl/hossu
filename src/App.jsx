@@ -626,88 +626,82 @@ function App() {
               </div>
             </section>
 
-            <section className="newsletter-section" id="updates">
-              {newsletterStatus === 'success' ? (
-                <div className="newsletter-success">
-                  <span className="label">YOU'RE IN</span>
-                  <h2>THANK YOU.</h2>
-                  <p>
-                    Check your inbox for a confirmation from
-                    Hossu.
-                  </p>
-                </div>
-              ) : (
-                <form
-                  className="newsletter-form"
-                  onSubmit={joinNewsletter}
-                >
-                  <span className="label">JOIN US</span>
-                  <h2>
-                    EXCLUSIVE OFFERS<br />
-                    AND THE LATEST NEWS.
-                  </h2>
-                  <p>Stay close to the archive.</p>
-
-                  <div className="newsletter-input-row">
-                    <input
-                      type="email"
-                      value={newsletterEmail}
-                      onChange={(event) =>
-                        setNewsletterEmail(event.target.value)
-                      }
-                      placeholder="YOUR EMAIL"
-                      aria-label="Email address"
-                      autoComplete="email"
-                      required
-                      disabled={newsletterStatus === 'submitting'}
-                    />
-                    <button
-                      type="submit"
-                      disabled={newsletterStatus === 'submitting'}
-                    >
-                      {newsletterStatus === 'submitting'
-                        ? '...'
-                        : 'JOIN →'}
-                    </button>
-                  </div>
-
-                  <small>
-                    By joining, you agree to receive Hossu updates.
-                  </small>
-
-                  {newsletterStatus === 'error' && (
-                    <p className="newsletter-error">
-                      {newsletterError}
-                    </p>
-                  )}
-                </form>
-              )}
-            </section>
-
             <section
-              className={`contact reveal ${
+              className={`contact contact-combined reveal ${
                 contactVisible ? 'is-visible' : ''
               }`}
               id="contact"
               ref={contactRef}
             >
-              <div className="contact-label">
-                CONTACT / 002
+              <div className="newsletter-content">
+                {newsletterStatus === 'success' ? (
+                  <div className="newsletter-success">
+                    <span className="label">YOU'RE IN</span>
+                    <h2>THANK YOU.</h2>
+                    <p>
+                      Check your inbox for a confirmation from
+                      Hossu.
+                    </p>
+                  </div>
+                ) : (
+                  <form
+                    className="newsletter-form"
+                    onSubmit={joinNewsletter}
+                  >
+                    <span className="label">JOIN US</span>
+                    <h2>
+                      EXCLUSIVE OFFERS<br />
+                      AND THE LATEST NEWS.
+                    </h2>
+                    <p>Stay close to the archive.</p>
+
+                    <div className="newsletter-input-row">
+                      <input
+                        type="email"
+                        value={newsletterEmail}
+                        onChange={(event) =>
+                          setNewsletterEmail(event.target.value)
+                        }
+                        placeholder="YOUR EMAIL"
+                        aria-label="Email address"
+                        autoComplete="email"
+                        required
+                        disabled={newsletterStatus === 'submitting'}
+                      />
+                      <button
+                        type="submit"
+                        disabled={newsletterStatus === 'submitting'}
+                      >
+                        {newsletterStatus === 'submitting'
+                          ? '...'
+                          : 'JOIN →'}
+                      </button>
+                    </div>
+
+                    <small>
+                      By joining, you agree to receive Hossu updates.
+                    </small>
+
+                    {newsletterStatus === 'error' && (
+                      <p className="newsletter-error">
+                        {newsletterError}
+                      </p>
+                    )}
+                  </form>
+                )}
               </div>
 
-              <a
-                href="mailto:info@hossu.top"
-                className="email"
-              >
-                info@hossu.top
-              </a>
-
-              <a
-                href="mailto:support@hossu.top"
-                className="email"
-              >
-                support@hossu.top
-              </a>
+              <div className="contact-details">
+                <span className="contact-label">CONTACT / 002</span>
+                <div className="contact-emails">
+                  <a href="mailto:info@hossu.top" className="email">
+                    info@hossu.top
+                  </a>
+                  <a href="mailto:support@hossu.top" className="email">
+                    support@hossu.top
+                  </a>
+                </div>
+              </div>
             </section>
           </>
         )}

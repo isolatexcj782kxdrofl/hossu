@@ -554,15 +554,19 @@ main,
 ========================= */
 
 .contact {
-  min-height: 75vh;
+  min-height: 0;
 
   display: flex;
   flex-direction: column;
-  justify-content: center;
 
-  padding: 100px 42px;
+  padding: 0 42px 58px;
 
   border-top: 1px solid #202020;
+}
+
+.contact-combined {
+  color: #0a0a0a;
+  background: #b7c46a;
 }
 
 .contact-label {
@@ -650,23 +654,22 @@ main,
    NEWSLETTER POPUP
 ========================= */
 
-.newsletter-section {
-  width: 100%;
-  min-height: 48vh;
+.newsletter-content {
+  width: min(100%, 600px);
+  min-height: 380px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  padding: 90px 42px;
+  margin: 0 auto;
+  padding: 70px 20px;
 
-  color: #0a0a0a;
-  background: #b7c46a;
-
-  border-top: 1px solid #202020;
+  border-bottom: 1px solid #202020;
 }
 
-.newsletter-section .label {
+.newsletter-content .label,
+.contact-combined .contact-label {
   color: #373d13;
 }
 
@@ -674,7 +677,7 @@ main,
   text-align: center;
 }
 
-.newsletter-section h2 {
+.newsletter-content h2 {
   max-width: 350px;
 
   margin: 28px 0 12px;
@@ -690,7 +693,7 @@ main,
   margin-left: auto;
 }
 
-.newsletter-section p {
+.newsletter-content p {
   margin: 0 0 22px;
 
   font-family: 'DM Mono', monospace;
@@ -747,7 +750,7 @@ main,
   opacity: 0.55;
 }
 
-.newsletter-section small {
+.newsletter-content small {
   display: block;
 
   margin-top: 14px;
@@ -779,6 +782,34 @@ main,
 .newsletter-success h2 {
   margin-right: auto;
   margin-left: auto;
+}
+
+.contact-details {
+  width: min(100%, 600px);
+
+  margin: 34px auto 0;
+}
+
+.contact-details .contact-label {
+  display: block;
+
+  margin-bottom: 18px;
+}
+
+.contact-emails {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+}
+
+.contact-emails .email {
+  margin-top: 0;
+  padding-bottom: 4px;
+  font-size: 0.55rem;
+}
+
+.contact-combined .email {
+  color: #0a0a0a;
 }
 
 /* =========================
@@ -1913,12 +1944,6 @@ main,
     padding: 0 18px;
   }
 
-  .newsletter-section {
-    min-height: 55vh;
-
-    padding: 75px 20px;
-  }
-
   .nav {
     gap: 15px;
   }
@@ -1974,7 +1999,7 @@ main,
   }
 
   .contact {
-    min-height: 65vh;
+    min-height: 0;
   }
 
   .contact h2 {
