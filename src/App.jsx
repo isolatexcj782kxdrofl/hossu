@@ -585,10 +585,17 @@ function App() {
               </div>
 
               <a
-                href="mailto:hossuclothing@gmail.com"
+                href="mailto:info@hossu.top"
                 className="email"
               >
-                hossuclothing@gmail.com
+                info@hossu.top
+              </a>
+
+              <a
+                href="mailto:support@hossu.top"
+                className="email"
+              >
+                support@hossu.top
               </a>
             </section>
           </>
