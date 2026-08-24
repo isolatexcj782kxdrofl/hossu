@@ -639,12 +639,10 @@ function App() {
                     className="newsletter-form"
                     onSubmit={joinNewsletter}
                   >
-                    <span className="label">JOIN US</span>
                     <h2>
-                      EXCLUSIVE OFFERS<br />
-                      AND THE LATEST NEWS.
+                      JOIN US
                     </h2>
-                    <p>Stay close to the archive.</p>
+                    <p>Get exclusive offers and news.</p>
 
                     <div className="newsletter-input-row">
                       <input
