@@ -698,14 +698,16 @@ function App() {
                     disabled={catalogProduct.available === false}
                   >
                     <div className="product-image">
-                      <img
-                        src={catalogProduct.colours[0].image}
-                        alt={catalogProduct.name}
-                        loading="lazy"
-                        decoding="async"
-                        width={1200}
-                        height={1200}
-                      />
+                      <div className="product-cutout">
+                        <img
+                          src={catalogProduct.colours[0].image}
+                          alt={catalogProduct.name}
+                          loading="lazy"
+                          decoding="async"
+                          width={1200}
+                          height={1200}
+                        />
+                      </div>
 
                       <span className="product-index">
                         {catalogProduct.id}
