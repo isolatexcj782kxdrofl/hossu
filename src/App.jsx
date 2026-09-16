@@ -4,7 +4,7 @@ import './App.css'
 
 const product = {
   id: 'H-001',
-  name: 'Grumpy Vampire',
+  name: 'Fang Face',
   type: 'T-SHIRT',
   description: "It's just one of those days.",
 
@@ -167,17 +167,19 @@ function ProductPreview({ selectedProduct, selectedColour }) {
   )
 
   return (
-    <div className="product-page-image">
-      {selectedProduct.colours.map((colour) => (
-        <img
-          key={colour.key}
-          src={colour.image}
-          alt={colour.key === visibleColour ? `${selectedProduct.name} — ${colour.name}` : ''}
-          aria-hidden={colour.key !== visibleColour}
-          className={colour.key === visibleColour ? 'is-active' : ''}
-          decoding="async"
-        />
-      ))}
+    <div className="product-page-image garment-image">
+      <div className="product-cutout">
+        {selectedProduct.colours.map((colour) => (
+          <img
+            key={colour.key}
+            src={colour.image}
+            alt={colour.key === visibleColour ? `${selectedProduct.name} — ${colour.name}` : ''}
+            aria-hidden={colour.key !== visibleColour}
+            className={colour.key === visibleColour ? 'is-active' : ''}
+            decoding="async"
+          />
+        ))}
+      </div>
       <span className="product-page-index">{selectedProduct.id}</span>
       <div className="product-image-caption" aria-hidden="true">
         <span>{selectedProduct.colours[visibleIndex].name}</span>
@@ -697,7 +699,7 @@ function App() {
                     }
                     disabled={catalogProduct.available === false}
                   >
-                    <div className="product-image">
+                    <div className="product-image garment-image">
                       <div className="product-cutout">
                         <img
                           src={catalogProduct.colours[0].image}
@@ -1034,11 +1036,14 @@ function App() {
                         animationDelay: `${index * 0.06}s`,
                       }}
                     >
-                      <div className="bag-item-image">
-                        <img
-                          src={item.colour.image}
-                          alt={item.name}
-                        />
+                      <div className="bag-item-image garment-image">
+                        <div className="product-cutout">
+                          <img
+                            src={item.colour.image}
+                            alt={`${item.name} — ${item.colour.name}`}
+                            decoding="async"
+                          />
+                        </div>
                       </div>
 
                       <div className="bag-item-info">

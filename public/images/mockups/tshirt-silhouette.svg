@@ -1,6 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200">
-  <!-- Both archive mockups use this garment silhouette. -->
-  <path fill="white" d="
+  <!-- Shared garment silhouette; trim the photo background from the edges. -->
+  <defs>
+    <filter id="edge-trim" x="-1%" y="-1%" width="102%" height="102%">
+      <feMorphology in="SourceGraphic" operator="erode" radius="2" />
+    </filter>
+  </defs>
+  <path fill="white" filter="url(#edge-trim)" d="
     M 505 161
     C 536 171 565 179 600 179
     C 635 179 664 171 695 161
