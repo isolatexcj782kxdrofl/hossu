@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import './App.css'
 
 const product = {
@@ -109,7 +110,7 @@ function useReveal() {
           observer.unobserve(node)
         }
       },
-      { threshold: 0.15, rootMargin: '0px 0px -60px 0px' },
+      { threshold: 0.08, rootMargin: '0px 0px -24px 0px' },
     )
 
     observer.observe(node)
@@ -137,8 +138,60 @@ function getCheckoutParams() {
   }
 }
 
+function ProductPreview({ selectedProduct, selectedColour }) {
+  const [visibleColour, setVisibleColour] = useState(selectedProduct.colours[0].key)
+  const [failedColour, setFailedColour] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+    const preview = new Image()
+    preview.src = selectedColour.image
+
+    // Keep the previous colour visible until the next photo is decoded.
+    preview.decode()
+      .then(() => {
+        if (!cancelled) {
+          setVisibleColour(selectedColour.key)
+          setFailedColour('')
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setFailedColour(selectedColour.key)
+      })
+
+    return () => { cancelled = true }
+  }, [selectedColour.image, selectedColour.key])
+
+  const visibleIndex = selectedProduct.colours.findIndex(
+    (colour) => colour.key === visibleColour,
+  )
+
+  return (
+    <div className="product-page-image">
+      {selectedProduct.colours.map((colour) => (
+        <img
+          key={colour.key}
+          src={colour.image}
+          alt={colour.key === visibleColour ? `${selectedProduct.name} — ${colour.name}` : ''}
+          aria-hidden={colour.key !== visibleColour}
+          className={colour.key === visibleColour ? 'is-active' : ''}
+          decoding="async"
+        />
+      ))}
+      <span className="product-page-index">{selectedProduct.id}</span>
+      <div className="product-image-caption" aria-hidden="true">
+        <span>{selectedProduct.colours[visibleIndex].name}</span>
+        <span>{String(visibleIndex + 1).padStart(2, '0')} / {String(selectedProduct.colours.length).padStart(2, '0')}</span>
+      </div>
+      {failedColour === selectedColour.key && (
+        <p className="preview-error" role="status">This colour preview couldn't load. Please try again.</p>
+      )}
+    </div>
+  )
+}
+
 function App() {
-  const initialCheckout = getCheckoutParams()
+  const [initialCheckout] = useState(getCheckoutParams)
 
   const [view, setView] = useState(() => {
     if (initialCheckout.status === 'success') return 'order-success'
@@ -179,6 +232,11 @@ function App() {
   const [checkoutError, setCheckoutError] =
     useState('')
   const [bagBump, setBagBump] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const [activeSection, setActiveSection] = useState('top')
+  const viewTransition = useRef(null)
+  const bagBumpTimer = useRef(null)
+  const messageTimer = useRef(null)
 
   const [orderId, setOrderId] = useState(
     initialCheckout.sessionId,
@@ -197,6 +255,39 @@ function App() {
   const [archiveRef, archiveVisible] = useReveal()
   const [gridRef, gridVisible] = useReveal()
   const [contactRef, contactVisible] = useReveal()
+
+  useEffect(() => {
+    let frame
+    const updateHeader = () => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        setScrolled(window.scrollY > 24)
+        if (view === 'home') {
+          const archive = document.getElementById('archive')
+          setActiveSection(
+            archive && archive.getBoundingClientRect().top < window.innerHeight * 0.45
+              ? 'archive'
+              : 'top',
+          )
+        }
+      })
+    }
+
+    updateHeader()
+    window.addEventListener('scroll', updateHeader, { passive: true })
+    window.addEventListener('resize', updateHeader)
+    return () => {
+      cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', updateHeader)
+      window.removeEventListener('resize', updateHeader)
+    }
+  }, [view])
+
+  useEffect(() => () => {
+    clearTimeout(bagBumpTimer.current)
+    clearTimeout(messageTimer.current)
+    viewTransition.current?.skipTransition()
+  }, [])
 
   // Save the bag whenever it changes.
   useEffect(() => {
@@ -259,11 +350,37 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const openView = (nextView) => {
-    setView(nextView)
-    setMessage('')
-    setCheckoutError('')
-    window.scrollTo(0, 0)
+  const openView = (nextView, targetId = 'top') => {
+    const update = () => {
+      flushSync(() => {
+        setView(nextView)
+        setMessage('')
+        setCheckoutError('')
+        if (nextView === 'home') setActiveSection(targetId)
+      })
+      const target = document.getElementById(targetId)
+      if (targetId === 'archive') {
+        target?.scrollIntoView({ behavior: 'instant' })
+      } else {
+        window.scrollTo({ top: 0, behavior: 'instant' })
+      }
+      target?.focus({ preventScroll: true })
+    }
+
+    viewTransition.current?.skipTransition()
+    if (
+      nextView !== view &&
+      typeof document.startViewTransition === 'function' &&
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      const transition = document.startViewTransition(update)
+      viewTransition.current = transition
+      transition.finished.finally(() => {
+        if (viewTransition.current === transition) viewTransition.current = null
+      }).catch(() => {})
+    } else {
+      update()
+    }
   }
 
   const joinNewsletter = async (event) => {
@@ -308,13 +425,7 @@ function App() {
     }
 
     event.preventDefault()
-    openView('home')
-
-    requestAnimationFrame(() => {
-      document
-        .getElementById('archive')
-        ?.scrollIntoView({ behavior: 'smooth' })
-    })
+    openView('home', 'archive')
   }
 
   const openProduct = (nextProduct = product) => {
@@ -368,12 +479,14 @@ function App() {
     setMessage('ADDED TO BAG')
     setAddedToBag(true)
 
+    clearTimeout(bagBumpTimer.current)
+    clearTimeout(messageTimer.current)
     setBagBump(true)
-    setTimeout(() => {
+    bagBumpTimer.current = setTimeout(() => {
       setBagBump(false)
-    }, 500)
+    }, 450)
 
-    setTimeout(() => {
+    messageTimer.current = setTimeout(() => {
       setMessage('')
     }, 1800)
   }
@@ -462,7 +575,8 @@ function App() {
       onContextMenu={preventImageInteraction}
       onDragStart={preventImageInteraction}
     >
-      <header className="header">
+      <a className="skip-link" href="#top">SKIP TO CONTENT</a>
+      <header className={`header ${scrolled || view !== 'home' ? 'is-scrolled' : ''}`}>
         <button
           className="logo"
           type="button"
@@ -475,15 +589,16 @@ function App() {
           />
         </button>
 
-        <nav className="nav">
+        <nav className="nav" aria-label="Main navigation">
           <button
             type="button"
             onClick={() => openView('home')}
+            aria-current={view === 'home' && activeSection === 'top' ? 'page' : undefined}
           >
             Home
           </button>
 
-          <a href="#archive" onClick={goToPieces}>
+          <a href="#archive" onClick={goToPieces} aria-current={view === 'home' && activeSection === 'archive' ? 'location' : undefined}>
             Pieces
           </a>
         </nav>
@@ -492,26 +607,30 @@ function App() {
           className={`bag ${bagBump ? 'bump' : ''}`}
           type="button"
           onClick={() => openView('bag')}
+          aria-label={`Bag, ${bagCount} ${bagCount === 1 ? 'item' : 'items'}`}
+          aria-current={view === 'bag' ? 'page' : undefined}
         >
-          Bag [{bagCount}]
+          Bag <span className="bag-count" aria-hidden="true">{bagCount}</span>
         </button>
       </header>
 
-      <main id="top">
+      <main id="top" tabIndex={-1}>
         {view === 'home' && (
           <>
             <section className="hero">
               <div className="hero-meta">
-                <span>HSS / 2026</span>
+                <span><span className="archive-dot" aria-hidden="true" />HSS / 2026</span>
                 <span>ARCHIVE_001</span>
               </div>
 
-              <div className="hero-title">
+              <h1 className="hero-title">
                 <img
                   src="/images/hossu-logo.png"
                   alt="Hossu"
+                  fetchPriority="high"
+                  decoding="async"
                 />
-              </div>
+              </h1>
 
               <div className="hero-bottom">
                 <p>
@@ -538,6 +657,7 @@ function App() {
             <section
               className="archive"
               id="archive"
+              tabIndex={-1}
             >
               <div
                 className={`archive-header reveal ${
@@ -553,18 +673,17 @@ function App() {
                   <h2>SELECTED PIECES</h2>
                 </div>
 
-                <span>02 OBJECTS</span>
+                <span>{String(catalogProducts.length).padStart(2, '0')} OBJECTS</span>
               </div>
 
               <div
-                className={`product-grid reveal reveal-delay ${
-                  gridVisible ? 'is-visible' : ''
-                }`}
+                className={`product-grid ${gridVisible ? 'is-visible' : ''}`}
                 ref={gridRef}
               >
-                {catalogProducts.map((catalogProduct) => (
+                {catalogProducts.map((catalogProduct, index) => (
                   <button
                     key={catalogProduct.id}
+                    style={{ '--reveal-delay': `${index * 110}ms` }}
                     type="button"
                     className={`product product-card ${
                       catalogProduct.available === false
@@ -582,6 +701,10 @@ function App() {
                       <img
                         src={catalogProduct.colours[0].image}
                         alt={catalogProduct.name}
+                        loading="lazy"
+                        decoding="async"
+                        width={1200}
+                        height={1200}
                       />
 
                       <span className="product-index">
@@ -589,9 +712,7 @@ function App() {
                       </span>
 
                       <span className="view">
-                        {catalogProduct.available === false
-                          ? 'COMING SOON'
-                          : 'VIEW →'}
+                        {catalogProduct.available === false ? 'COMING SOON' : <>VIEW PIECE <span aria-hidden="true">↗</span></>}
                       </span>
                     </div>
 
@@ -606,11 +727,19 @@ function App() {
                         </p>
                       </div>
 
-                      <span>
+                      <span className="product-card-price">
                         {catalogProduct.available === false
                           ? 'NOT YET AVAILABLE'
                           : 'FROM £24.99'}
                       </span>
+                    </div>
+                    <div className="product-card-bottom">
+                      <span className="product-colours" aria-hidden="true">
+                        {catalogProduct.colours.map((colour) => (
+                          <span key={colour.key} className={`colour-swatch ${colour.key}`} title={colour.name} />
+                        ))}
+                      </span>
+                      <span>{String(catalogProduct.colours.length).padStart(2, '0')} COLOURS</span>
                     </div>
                   </button>
                 ))}
@@ -626,7 +755,7 @@ function App() {
             >
               <div className="newsletter-content">
                 {newsletterStatus === 'success' ? (
-                  <div className="newsletter-success">
+                  <div className="newsletter-success" role="status">
                     <span className="label">YOU'RE IN</span>
                     <h2>THANK YOU.</h2>
                     <p>
@@ -639,9 +768,8 @@ function App() {
                     className="newsletter-form"
                     onSubmit={joinNewsletter}
                   >
-                    <h2>
-                      JOIN US
-                    </h2>
+                    <span className="label">STAY IN THE LOOP</span>
+                    <h2>JOIN US</h2>
                     <p>Get exclusive offers and news.</p>
 
                     <div className="newsletter-input-row">
@@ -672,7 +800,7 @@ function App() {
                     </small>
 
                     {newsletterStatus === 'error' && (
-                      <p className="newsletter-error">
+                      <p className="newsletter-error" role="alert">
                         {newsletterError}
                       </p>
                     )}
@@ -700,22 +828,17 @@ function App() {
             <button
               type="button"
               className="back-button"
-              onClick={() => openView('home')}
+              onClick={() => openView('home', 'archive')}
             >
               ← BACK TO ARCHIVE
             </button>
 
             <div className="product-page-grid">
-              <div className="product-page-image">
-                <img
-                  src={selectedColour.image}
-                  alt={`${selectedProduct.name} - ${selectedColour.name}`}
-                />
-
-                <span className="product-page-index">
-                  {selectedProduct.id}
-                </span>
-              </div>
+              <ProductPreview
+                key={selectedProduct.id}
+                selectedProduct={selectedProduct}
+                selectedColour={selectedColour}
+              />
 
               <div className="product-page-info">
                 <div className="product-page-heading">
@@ -756,6 +879,7 @@ function App() {
                         <button
                           key={colour.key}
                           type="button"
+                          aria-pressed={selectedColour.key === colour.key}
                           className={`colour-button ${
                             selectedColour.key ===
                             colour.key
@@ -767,6 +891,7 @@ function App() {
                               colour,
                             )
                             setMessage('')
+                            setAddedToBag(false)
                           }}
                         >
                           <span
@@ -782,7 +907,7 @@ function App() {
                   </div>
                 </div>
 
-                <div className="option-group">
+                <div className={`option-group ${message === 'SELECT A SIZE' ? 'has-error' : ''}`}>
                   <div className="option-heading">
                     <span>SIZE</span>
 
@@ -798,6 +923,7 @@ function App() {
                         <button
                           key={size}
                           type="button"
+                          aria-pressed={selectedSize === size}
                           className={`size-button ${
                             selectedSize ===
                             size
@@ -809,6 +935,7 @@ function App() {
                               size,
                             )
                             setMessage('')
+                            setAddedToBag(false)
                           }}
                         >
                           {size}
@@ -827,8 +954,9 @@ function App() {
                     {message || 'ADD TO BAG'}
                   </span>
 
-                  <span>→</span>
+                  <span aria-hidden="true">→</span>
                 </button>
+                <span className="sr-only" role="status" aria-live="polite">{message}</span>
 
                 {addedToBag &&
                   bagCount > 0 && (
@@ -887,7 +1015,7 @@ function App() {
                 <button
                   type="button"
                   onClick={() =>
-                    openView('home')
+                    openView('home', 'archive')
                   }
                 >
                   RETURN TO ARCHIVE →
@@ -928,6 +1056,7 @@ function App() {
                         <div className="quantity">
                           <button
                             type="button"
+                            aria-label={`Decrease quantity of ${item.name}`}
                             onClick={() =>
                               changeQuantity(
                                 index,
@@ -944,6 +1073,7 @@ function App() {
 
                           <button
                             type="button"
+                            aria-label={`Increase quantity of ${item.name}`}
                             onClick={() =>
                               changeQuantity(
                                 index,
@@ -997,7 +1127,7 @@ function App() {
                   </div>
 
                   {checkoutError && (
-                    <p className="checkout-error">
+                    <p className="checkout-error" role="alert">
                       {checkoutError}
                     </p>
                   )}
